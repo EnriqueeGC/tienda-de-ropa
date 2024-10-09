@@ -77,7 +77,9 @@ const getDiscountByType = async (req, res) => {
     }
 
     try {
-        const query = `SELECT * FROM DESCUENTO WHERE LOWER(TIPO_DESCUENTO) LIKE LOWER(:tipo_descuento)`;
+        const query = `SELECT * FROM DESCUENTO 
+                        WHERE LOWER(TIPO_DESCUENTO) LIKE LOWER(:tipo_descuento)
+                        OR SOUNDEX(TIPO_DESCUENTO) = SOUNDEX(:tipo_descuento)`;
         const params = { tipo_descuento: `%${tipo_descuento}%` };
         
         const result = await db.executeQuery(query, params);

@@ -67,6 +67,31 @@ const getCategoryById = async (req, res) => {
     }
 }
 
+const getCategoryByName = async (req, res) => {
+    const { nombre_categoria } = req.query;
+
+    if (!nombre_categoria) {
+        return res.status(400).json({ error: 'El parámetro nombre_categoria es requerido' });
+    }
+
+    try {
+        const query = `SELECT * FROM CATEGORIA 
+                        WHERE LOWER(NOMBRE_CATEGORIA) LIKE LOWER(:nombre_categoria)
+                        OR SOUNDEX(NOMBRE_CATEGORIA) = SOUNDEX(:nombre_categoria)`;
+        const params = [nombre_categoria];
+        const result = await db.executeQuery(query, params);
+
+        if (result.rows && result.rows.length > 0) {
+            res.status(200).json(result.rows);
+        } else {
+            throw new Error('No se encontró la categoría');
+        }
+    } catch (error) {
+        console.error(`Error al obtener categoría: ${error}`);
+        res.status(500).json({ error: 'Error al obtener categoría' });
+    }
+}
+
 const updateCategory = async (req, res) => {
     const { id } = req.params;
     const { nombre_categoria, genero } = req.body;

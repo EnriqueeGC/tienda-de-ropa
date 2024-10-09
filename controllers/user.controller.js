@@ -3,7 +3,6 @@ const bcrypt = require('bcrypt');
 
 const SECRET_KEY = 'proyectoUMG';
 
-
 const registerUser = async (req, res) => {
     const { nombre, apellido, direccion, correoElectronico, telefono, nombreUsuario, contrasena, rolID} = req.body;
 
@@ -54,7 +53,7 @@ const getUsersById = async (req, res) => {
         res.status(500).json({ error: 'Error al buscar el usuairo'});
     }
 }
- 
+
 const getUsersByName = async (req, res) => {
     const { nombre } = req.query; // query para enviar multiples prametros opcionales en formato clave-valor despues del signo '?' -> ruta/getUserByName?nombre=ejemplo
 
@@ -62,7 +61,9 @@ const getUsersByName = async (req, res) => {
         return res.status(400).json({ error: 'El parámetro nombre es requerido' });
     }
     try {
-        const query = `SELECT * FROM USUARIO WHERE LOWER(NOMBRE) LIKE LOWER(:NOMBRE)`;
+        const query = `SELECT * FROM USUARIO 
+                        WHERE LOWER(NOMBRE) LIKE LOWER(:NOMBRE)
+                        OR SOUNDEX(NOMBRE) = SOUNDEX(:NOMBRE)`;
         const params = [nombre];
         
         const result = await db.executeQuery(query, params);
