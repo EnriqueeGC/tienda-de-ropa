@@ -8,6 +8,7 @@ router.post('/register', userMiddleware.validateUser, userMiddleware.validateRes
 router.get('/getAll', userController.getAllUsers);
 router.get('/getUserById/:usuarioId', userController.getUsersById);
 router.get('/getUserByName', userController.getUsersByName); // /getByName?nombre=ejemplo
+router.get('/getUserBySecondName', userController.getUserBySecondName); // /getByEmail?correoElectronico=ejemplo
 router.delete('/deleteUserById/:userControllerId', userController.deleteUserById);
 router.put('/updateUserById/:usuarioID', userMiddleware.validateUser, userMiddleware.validateResults, userController.updateUser);
 

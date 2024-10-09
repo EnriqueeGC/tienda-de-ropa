@@ -79,6 +79,31 @@ const getUsersByName = async (req, res) => {
     }
 }
 
+const getUserBySecondName = async (req, res) => {
+    const { apellido } = req.query;
+
+    if (!apellido) {
+        return res.status(400).json({ error: 'El parámetro apellido es requerido' });
+    }
+    try {
+        const query = `SELECT * FROM USUARIO 
+                        WHERE LOWER(APELLIDO) LIKE LOWER(:APELLIDO)
+                        OR SOUNDEX(APELLIDO) = SOUNDEX(:APELLIDO)`;
+        const params = [apellido];
+        
+        const result = await db.executeQuery(query, params);
+
+        if (result.rows.length === 0){
+            return res.status(404).json({ message: 'No se encontraron usuarios'});
+        }
+
+        res.status(200).json({message: result.rows});
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error al buscar a los usuarios'});
+    }
+}
+
 const deleteUserById = async (req, res) => {
     const { usuarioId }  = req.params;
 
@@ -140,6 +165,7 @@ module.exports = {
     getAllUsers,
     getUsersById,
     getUsersByName,
+    getUserBySecondName,
     deleteUserById,
     updateUser
 }
