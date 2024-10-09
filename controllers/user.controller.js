@@ -62,7 +62,7 @@ const getUsersByName = async (req, res) => {
         return res.status(400).json({ error: 'El parámetro nombre es requerido' });
     }
     try {
-        const query = `SELECT * FROM USUARIO WHERE NOMBRE LIKE :NOMBRE`;
+        const query = `SELECT * FROM USUARIO WHERE LOWER(NOMBRE) LIKE LOWER(:NOMBRE)`;
         const params = [nombre];
         
         const result = await db.executeQuery(query, params);

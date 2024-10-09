@@ -16,7 +16,7 @@ app.use('/api/users/', userRoutes);
 app.use('/api/categories/', categoryRoutes);
 app.use('/api/products/', productRoutes);
 app.use('/api/discounts/', discountRoutes);
-app.use('/api/', authRoutes);
+app.use('/api/', authRoutes); // inicio de sesion
 
 app.listen(port, () => {
     console.log(`Servidor corriendo en en http://localhost:${port}`);
