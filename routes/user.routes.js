@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.post('/register', userMiddleware.validateUser, userMiddleware.validateResults, userController.registerUser);
 router.get('/getAll', userController.getAllUsers);
-router.get('/getUserById/:userControllerId', userController.getUsersById);
+router.get('/getUserById/:usuarioId', userController.getUsersById);
 router.get('/getUserByName', userController.getUsersByName); // /getByName?nombre=ejemplo
 router.delete('/deleteUserById/:userControllerId', userController.deleteUserById);
 router.put('/updateUserById/:usuarioID', userMiddleware.validateUser, userMiddleware.validateResults, userController.updateUser);
