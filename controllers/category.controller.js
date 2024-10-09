@@ -78,7 +78,7 @@ const getCategoryByName = async (req, res) => {
         const query = `SELECT * FROM CATEGORIA 
                         WHERE LOWER(NOMBRE_CATEGORIA) LIKE LOWER(:nombre_categoria)
                         OR SOUNDEX(NOMBRE_CATEGORIA) = SOUNDEX(:nombre_categoria)`;
-        const params = [nombre_categoria];
+        const params = { nombre_categoria: `%${nombre_categoria}%`}
         const result = await db.executeQuery(query, params);
 
         if (result.rows && result.rows.length > 0) {

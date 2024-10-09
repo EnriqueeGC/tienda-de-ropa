@@ -61,10 +61,11 @@ const getUsersByName = async (req, res) => {
         return res.status(400).json({ error: 'El parámetro nombre es requerido' });
     }
     try {
-        const query = `SELECT * FROM USUARIO 
-                        WHERE LOWER(NOMBRE) LIKE LOWER(:NOMBRE)
-                        OR SOUNDEX(NOMBRE) = SOUNDEX(:NOMBRE)`;
-        const params = [nombre];
+        const query = `
+        SELECT * FROM USUARIO 
+        WHERE LOWER(NOMBRE) LIKE LOWER(:nombre)
+        OR SOUNDEX(NOMBRE) = SOUNDEX(:nombre)`;
+        const params = { nombre: `%${nombre}%`};
         
         const result = await db.executeQuery(query, params);
 
@@ -75,7 +76,7 @@ const getUsersByName = async (req, res) => {
         res.status(200).json({message: result.rows});
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: 'Error al buscar a los usuarios'});
+        res.status(500).json({ error: 'Error del servidor'});
     }
 }
 
@@ -89,7 +90,7 @@ const getUserBySecondName = async (req, res) => {
         const query = `SELECT * FROM USUARIO 
                         WHERE LOWER(APELLIDO) LIKE LOWER(:APELLIDO)
                         OR SOUNDEX(APELLIDO) = SOUNDEX(:APELLIDO)`;
-        const params = [apellido];
+        const params = { apellido: `%${apellido}%` }
         
         const result = await db.executeQuery(query, params);
 
