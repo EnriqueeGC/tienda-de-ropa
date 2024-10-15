@@ -6,7 +6,7 @@ const manageShoppingCart = async (req, res) => {
 
     try {
         // 1. Verificar si el usuario ya tiene un carrito activo
-        let query = `SELECT ID FROM CARRITO WHERE USUARIOID = :id_usuario AND ESTADO = 'ABIERTO'`;
+        let query = `SELECT ID FROM CARRITO WHERE USUARIOID = :id_usuario`;
         let params = [id_usuario];
         let result = await db.executeQuery(query, params);
 
@@ -14,7 +14,7 @@ const manageShoppingCart = async (req, res) => {
         
         if (result.rows.length === 0) {
             // 2. Si no tiene carrito, crear uno nuevo
-            query = `INSERT INTO CARRITO (USUARIOID, FECHA_CREACION, ESTADO) VALUES (:id_usuario, SYSDATE, 'ABIERTO') RETURNING ID INTO :id_carrito`;
+            query = `INSERT INTO CARRITO (USUARIOID, FECHA_CREACION) VALUES (:id_usuario, SYSDATE) RETURNING ID INTO :id_carrito`;
             params = [id_usuario];
             const newCart = await db.executeQuery(query, params);
             id_carrito = newCart.outBinds.id_carrito;  // Capturar el ID del carrito recién creado

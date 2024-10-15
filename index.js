@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require('cors');
 
 const userRoutes = require('./routes/user.routes.js');
 const categoryRoutes = require('./routes/category.routes.js')
@@ -6,10 +7,14 @@ const productRoutes = require('./routes/product.routes.js');
 const discountRoutes = require('./routes/discount.routes.js');
 const authRoutes = require('./routes/auth.routes.js')
 
-
 const app = express();
 const port = 3000;
 
+app.use(cors(
+    {
+        origin: 'https://tienda-de-ropa-v6h4.onrender.com'
+    }
+));
 app.use(express.json());
 
 app.use('/api/users/', userRoutes);
