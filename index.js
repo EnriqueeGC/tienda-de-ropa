@@ -8,7 +8,8 @@ const discountRoutes = require('./routes/discount.routes.js');
 const authRoutes = require('./routes/auth.routes.js')
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;  // Usa el puerto de Render si está disponible, si no, el puerto 3000
+
 
 app.use(cors());
 app.use(express.json());
