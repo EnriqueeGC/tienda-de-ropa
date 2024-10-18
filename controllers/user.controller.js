@@ -37,6 +37,19 @@ const getAllUsers = async (req, res) => {
     }
 }
 
+const getAllCustomers = async (req, res) => {
+    try {
+        const query = `SELECT * FROM USUARIO WHERE ROLID = 3`;
+        const result = await db.executeQuery(query)
+
+        res.status(200).json(result.rows);
+    }
+    catch (err) {
+        console.error(err)
+        res.status(500).json({ error: 'Error al buscar usuarios'});
+    }
+}
+
 const getUsersById = async (req, res) => {
     const { usuarioId } = req.params;
 
@@ -166,6 +179,7 @@ const updateUser = async (req, res) => {
 module.exports = {
     registerUser,
     getAllUsers,
+    getAllCustomers,
     getUsersById,
     getUsersByName,
     getUserBySecondName,

@@ -43,8 +43,8 @@ const login = async (req, res) => {
         // Enviar la respuesta con el token
         return res.status(200).json({
             message: 'Login exitoso',
-            nombre: usuario.NOMBRE,
-            apellido: usuario.APELLIDO,
+            nombre: `${usuario.NOMBRE} ${usuario.APELLIDO}`,  // Puedes ajustar los datos que deseas enviar
+            rolId: usuario.ROLID,
             token
         });
 
