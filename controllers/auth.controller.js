@@ -33,8 +33,8 @@ const login = async (req, res) => {
         // Generar un token JWT si la contraseña es correcta
         const token = jwt.sign(
             {
-                id: usuario.ID,  // Puedes ajustar el payload del token como quieras
-                nombre_usuario: usuario.NOMBRE_USUARIO
+                id: usuario.USUARIOID,  // Puedes ajustar el payload del token como quieras
+                nombre_usuario: usuario.NOMBREUSUARIO
             },
             SECRET_KEY,
             { expiresIn: '1h' }  // El token expirará en 1 hora
@@ -43,7 +43,8 @@ const login = async (req, res) => {
         // Enviar la respuesta con el token
         return res.status(200).json({
             message: 'Login exitoso',
-            nombre_usuario: usuario.NOMBREUSUARIO,
+            nombre: usuario.NOMBRE,
+            apellido: usuario.APELLIDO,
             token
         });
 
