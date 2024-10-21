@@ -1,13 +1,13 @@
 const db = require('../config/db.js')
 
 const createProduct = async (req, res) => {
-    const {nombre_producto, descripcion, precio, id_categoria, id_descuento, stock } = req.body;
+    const { nombre_producto, descripcion, precio, id_categoria, id_descuento } = req.body;
 
     try {
-        const query = `INSERT INTO PRODUCTO (NOMBRE_PRODUCTO, DESCRIPCION, PRECIO, ID_CATEGORIA, ID_DESCUENTO, STOCK) VALUES (:nombre_producto, :descripcion, :precio, :id_categoria, :id_descuento, :stock) RETURNING ID_PRODUCTO INTO :id_producto`;
+        const query = `INSERT INTO PRODUCTO (NOMBRE_PRODUCTO, DESCRIPCION, PRECIO, ID_CATEGORIA, ID_DESCUENTO) VALUES (:nombre_producto, :descripcion, :precio, :id_categoria, :id_descuento) RETURNING ID_PRODUCTO INTO :id_producto`;
         const id_producto = { type: db.oracledb.NUMBER, dir: db.oracledb.BIND_OUT };
 
-        const params = { nombre_producto, descripcion, precio, id_categoria, id_descuento, stock, id_producto };
+        const params = { nombre_producto, descripcion, precio, id_categoria, id_descuento, id_producto };
         const result = await db.executeQuery(query, params);
 
         if (result.outBinds && result.outBinds.id_producto) {
@@ -19,29 +19,43 @@ const createProduct = async (req, res) => {
                 descripcion,
                 precio,
                 id_categoria,
-                id_descuento,
-                stock
+                id_descuento
             });
         }
     } catch (err) {
         console.error('Error al ingresar el articulo', err);
-        res.status(500).json({error: 'Error al ingresar el articulo'});
+        res.status(500).json({ error: 'Error al ingresar el articulo' });
     }
 }
 
 const getAllProducts = async (req, res) => {
     try {
-        const query = `SELECT * FROM PRODUCTO`;
+        //const query = `SELECT * FROM PRODUCTO`;
+        const query = `
+            SELECT 
+                P.ID_PRODUCTO, 
+                P.NOMBRE_PRODUCTO,
+                P.DESCRIPCION,
+                P.PRECIO,
+                COALESCE(LISTAGG(T.NOMBRE_TALLA || ' (' || V.STOCK || ')', ', ') WITHIN GROUP (ORDER BY T.NOMBRE_TALLA), 'Sin stock') AS TALLAS_STOCK
+            FROM 
+                PRODUCTO P
+            LEFT JOIN
+                VARIANTES_PRODUCTO V ON P.ID_PRODUCTO = V.ID_PRODUCTO
+            LEFT JOIN 
+                TALLA T ON V.ID_TALLA = T.ID_TALLA
+            GROUP BY 
+                P.ID_PRODUCTO, P.NOMBRE_PRODUCTO, P.DESCRIPCION, P.PRECIO`
         const result = await db.executeQuery(query);
 
-        if (result.rows.length === 0){
-            return res.status(404).json({ message: 'Productos no encontrados'});
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: 'Productos no encontrados' });
         }
 
         res.status(200).json(result.rows)
     } catch (err) {
         console.error('Error al obtener todos los Productos', err);
-        res.status(500).json({error: 'Error al obtener todos los productos'});
+        res.status(500).json({ error: 'Error al obtener todos los productos' });
     }
 }
 
@@ -53,14 +67,14 @@ const getProductById = async (req, res) => {
         const params = [id_producto];
         const result = await db.executeQuery(query, params);
 
-        if (result.rows.length === 0){
-            return res.status(404).json({ message: `Producto no encontrado con el id: ${id_producto}`});
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: `Producto no encontrado con el id: ${id_producto}` });
         }
 
         res.status(200).json(result.rows[0])
     } catch (err) {
-       console.error('Error al obtener los productos', err);
-       res.status(500).json({message: 'Error al obtener el producto'});
+        console.error('Error al obtener los productos', err);
+        res.status(500).json({ message: 'Error al obtener el producto' });
     }
 }
 
@@ -76,14 +90,14 @@ const getProductByName = async (req, res) => {
         const params = { nombre_producto: `%${nombre_producto}%` };
         const result = await db.executeQuery(query, params);
 
-        if (result.rows.length === 0){
-            return res.status(404).json({ message: `No existen coincidencias con el nombre ${nombre_producto}`});
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: `No existen coincidencias con el nombre ${nombre_producto}` });
         }
 
         res.status(200).json(result.rows)
     } catch (err) {
         console.error('Error al buscar el producto', err);
-        res.status(500).json({error: 'Error al buscar el producto'});
+        res.status(500).json({ error: 'Error al buscar el producto' });
     }
 }
 
@@ -95,23 +109,23 @@ const deleteProductById = async (req, res) => {
         const params = [id_producto];
         const result = await db.executeQuery(query, params)
 
-        if (result.rowsAffected === 0){
-            return res.status(404).json({message: `Articulo no encontrado con el id ${id_producto}`});
+        if (result.rowsAffected === 0) {
+            return res.status(404).json({ message: `Articulo no encontrado con el id ${id_producto}` });
         }
 
-        res.status(200).json({ 
+        res.status(200).json({
             message: 'Producto eliminado exitosamente',
             id_producto: id_producto
         });
     } catch (err) {
         console.error('Error al eliminar el producto', err);
-        res.status(500).json({error: 'Error al eliminar el producto'});
+        res.status(500).json({ error: 'Error al eliminar el producto' });
     }
 }
 
 const updateProductById = async (req, res) => {
-    const { nombre_producto, descripcion, precio, id_categoria, id_descuento, stock } = req.body;
-    const { id_producto }  = req.params;
+    const { nombre_producto, descripcion, precio, id_categoria, id_descuento} = req.body;
+    const { id_producto } = req.params;
 
     try {
         const query = `
@@ -121,29 +135,28 @@ const updateProductById = async (req, res) => {
                 DESCRIPCION = :descripcion,
                 PRECIO = :precio,
                 ID_CATEGORIA = :id_categoria,
-                ID_DESCUENTO = :id_descuento,
-                STOCK = :stock
+                ID_DESCUENTO = :id_descuento
             WHERE ID_PRODUCTO = :id_producto      
         `;
-        const params = [ nombre_producto, descripcion, precio, id_categoria, id_descuento, stock, id_producto];
+        const params = [nombre_producto, descripcion, precio, id_categoria, id_descuento, id_producto];
         const result = await db.executeQuery(query, params);
 
-        if (result.rowsAffected === 0){
-            return res.status(404).json({message: 'Producto no encontrado'});
+        if (result.rowsAffected === 0) {
+            return res.status(404).json({ message: 'Producto no encontrado' });
         }
-        
-        res.status(200).json({message: `Producto actualizado exitosamente con el id: ${id_producto}`,
+
+        res.status(200).json({
+            message: `Producto actualizado exitosamente con el id: ${id_producto}`,
             id_producto,
             nombre_producto,
             descripcion,
             precio,
             id_categoria,
-            id_descuento,
-            stock
+            id_descuento
         })
     } catch (err) {
         console.error('Error al actualizar el producto', err);
-        res.status(500).json({error: 'Error al actualizar el producto'});
+        res.status(500).json({ error: 'Error al actualizar el producto' });
     }
 }
 
@@ -153,5 +166,5 @@ module.exports = {
     getProductById,
     getProductByName,
     deleteProductById,
-    updateProductById,
+    updateProductById
 }
