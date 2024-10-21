@@ -105,23 +105,30 @@ const deleteProductById = async (req, res) => {
     const { id_producto } = req.params;
 
     try {
-        const query = `DELETE FROM PRODUCTO WHERE ID_PRODUCTO = :ID_PRODUCTO`;
-        const params = [id_producto];
-        const result = await db.executeQuery(query, params)
+        // Eliminar todas las versiones del producto en VERSIONES_PRODUCTO
+        const deleteVersionsQuery = `DELETE FROM VARIANTES_PRODUCTO WHERE ID_PRODUCTO = :ID_PRODUCTO`;
+        const versionParams = [id_producto];
+        await db.executeQuery(deleteVersionsQuery, versionParams);
+
+        // Eliminar el producto de la tabla PRODUCTO
+        const deleteProductQuery = `DELETE FROM PRODUCTO WHERE ID_PRODUCTO = :ID_PRODUCTO`;
+        const productParams = [id_producto];
+        const result = await db.executeQuery(deleteProductQuery, productParams);
 
         if (result.rowsAffected === 0) {
-            return res.status(404).json({ message: `Articulo no encontrado con el id ${id_producto}` });
+            return res.status(404).json({ message: `Artículo no encontrado con el id ${id_producto}` });
         }
 
         res.status(200).json({
-            message: 'Producto eliminado exitosamente',
+            message: 'Producto y sus versiones eliminados exitosamente',
             id_producto: id_producto
         });
     } catch (err) {
         console.error('Error al eliminar el producto', err);
         res.status(500).json({ error: 'Error al eliminar el producto' });
     }
-}
+};
+
 
 const updateProductById = async (req, res) => {
     const { nombre_producto, descripcion, precio, id_categoria, id_descuento} = req.body;
