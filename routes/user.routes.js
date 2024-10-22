@@ -10,7 +10,7 @@ router.get('/getAllCustomers', userController.getAllCustomers);
 router.get('/getUserById/:usuarioId', userController.getUsersById);
 router.get('/getUserByName', userController.getUsersByName); // /getByName?nombre=ejemplo
 router.get('/getUserBySecondName', userController.getUserBySecondName); // /getByEmail?correoElectronico=ejemplo
-router.delete('/deleteUserById/:userControllerId', userController.deleteUserById);
+router.delete('/deleteUserById/:usuarioId', userController.deleteUserById);
 router.put('/updateUserById/:usuarioID', userMiddleware.validateUser, userMiddleware.validateResults, userController.updateUser);
 
 module.exports = router;
