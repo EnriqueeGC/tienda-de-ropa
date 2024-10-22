@@ -1,13 +1,23 @@
 const db = require('../config/db.js')
+const multer = require('multer');
+const { storage } = require('../config/cloudinary.controller.js');
+const upload = multer({ storage });
 
 const createProduct = async (req, res) => {
     const { nombre_producto, descripcion, precio, id_categoria, id_descuento } = req.body;
 
     try {
-        const query = `INSERT INTO PRODUCTO (NOMBRE_PRODUCTO, DESCRIPCION, PRECIO, ID_CATEGORIA, ID_DESCUENTO) VALUES (:nombre_producto, :descripcion, :precio, :id_categoria, :id_descuento) RETURNING ID_PRODUCTO INTO :id_producto`;
+        // Subir imagen a Cloudinary
+        let url_imagen = null;
+        if (req.file) { // Si el archivo existe
+            const result = await cloudinary.uploader.upload(req.file.path);
+            url_imagen = result.secure_url; // Obtener la URL segura de la imagen
+        }
+
+        const query = `INSERT INTO PRODUCTO (NOMBRE_PRODUCTO, DESCRIPCION, PRECIO, ID_CATEGORIA, ID_DESCUENTO, URL_IMAGEN) VALUES (:nombre_producto, :descripcion, :precio, :id_categoria, :id_descuento, :url_imagen) RETURNING ID_PRODUCTO INTO :id_producto`;
         const id_producto = { type: db.oracledb.NUMBER, dir: db.oracledb.BIND_OUT };
 
-        const params = { nombre_producto, descripcion, precio, id_categoria, id_descuento, id_producto };
+        const params = { nombre_producto, descripcion, precio, id_categoria, id_descuento, url_imagen, id_producto };
         const result = await db.executeQuery(query, params);
 
         if (result.outBinds && result.outBinds.id_producto) {
@@ -19,12 +29,13 @@ const createProduct = async (req, res) => {
                 descripcion,
                 precio,
                 id_categoria,
-                id_descuento
+                id_descuento,
+                url_imagen
             });
         }
     } catch (err) {
-        console.error('Error al ingresar el articulo', err);
-        res.status(500).json({ error: 'Error al ingresar el articulo' });
+        console.error('Error al ingresar el producto', err);
+        res.status(500).json({ error: 'Error al ingresar el producto' });
     }
 }
 
@@ -129,12 +140,18 @@ const deleteProductById = async (req, res) => {
     }
 };
 
-
 const updateProductById = async (req, res) => {
-    const { nombre_producto, descripcion, precio, id_categoria, id_descuento} = req.body;
+    const { nombre_producto, descripcion, precio, id_categoria, id_descuento } = req.body;
     const { id_producto } = req.params;
 
     try {
+        // Subir nueva imagen si se envía
+        let url_imagen = null;
+        if (req.file) { // Si el archivo existe
+            const result = await cloudinary.uploader.upload(req.file.path);
+            url_imagen = result.secure_url; // Obtener la URL segura de la imagen
+        }
+
         const query = `
             UPDATE PRODUCTO
             SET
@@ -142,10 +159,11 @@ const updateProductById = async (req, res) => {
                 DESCRIPCION = :descripcion,
                 PRECIO = :precio,
                 ID_CATEGORIA = :id_categoria,
-                ID_DESCUENTO = :id_descuento
+                ID_DESCUENTO = :id_descuento,
+                URL_IMAGEN = COALESCE(:url_imagen, URL_IMAGEN) -- Actualizar la imagen solo si hay nueva
             WHERE ID_PRODUCTO = :id_producto      
         `;
-        const params = [nombre_producto, descripcion, precio, id_categoria, id_descuento, id_producto];
+        const params = [nombre_producto, descripcion, precio, id_categoria, id_descuento, url_imagen, id_producto];
         const result = await db.executeQuery(query, params);
 
         if (result.rowsAffected === 0) {
@@ -159,7 +177,8 @@ const updateProductById = async (req, res) => {
             descripcion,
             precio,
             id_categoria,
-            id_descuento
+            id_descuento,
+            url_imagen
         })
     } catch (err) {
         console.error('Error al actualizar el producto', err);
