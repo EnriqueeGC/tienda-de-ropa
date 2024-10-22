@@ -154,8 +154,7 @@ const deleteUserById = async (req, res) => {
 
 const updateUser = async (req, res) => {
     const { usuarioID } = req.params;
-    const { nombre, apellido, direccion, correoElectronico, telefono, nombreUsuario, contrasena} = req.body;
-    const rolID = 3;
+    const { nombre, apellido, direccion, correoElectronico, telefono, nombreUsuario, contrasena, rolID = 3} = req.body;
     
     try {
         const hashedPassword = contrasena ? await bcrypt.hash(contrasena, 10) : null;
