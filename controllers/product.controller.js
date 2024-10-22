@@ -1,6 +1,7 @@
 const db = require('../config/db.js')
 const multer = require('multer');
-const { storage } = require('../config/cloudinary.controller.js');
+const { storage } = require('../config/cloudinary.js');
+const cloudinary = require('cloudinary').v2;
 const upload = multer({ storage });
 
 const createProduct = async (req, res) => {
