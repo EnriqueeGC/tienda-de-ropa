@@ -4,11 +4,10 @@ const createCategory = async (req, res) => {
     const { nombre_categoria, genero } = req.body;
 
     try {
-        const query = `INSERT INTO CATEGORIA (NOMBRE_CATEGORIA, GENERO) VALUES (:nombre_categoria, :genero) RETURNING ID_CATEGORIA INTO :id_categoria`;
+        const query = `INSERT INTO CATEGORIA (NOMBRE_CATEGORIA) VALUES (:nombre_categoria) RETURNING ID_CATEGORIA INTO :id_categoria`;
         const id_categoria = { type: db.oracledb.NUMBER, dir: db.oracledb.BIND_OUT };
         const params = {
             nombre_categoria,
-            genero,
             id_categoria
         };
 
@@ -19,8 +18,7 @@ const createCategory = async (req, res) => {
             res.status(201).json({
                 message: 'Categoría ingresada exitosamente',
                 id: newId,
-                nombre_categoria,
-                genero
+                nombre_categoria
             });
         } else {
             throw new Error('No se pudo obtener el ID de la categoría recién creada.');
@@ -97,10 +95,9 @@ const updateCategory = async (req, res) => {
     const { nombre_categoria, genero } = req.body;
 
     try {
-        const query = `UPDATE CATEGORIA SET NOMBRE_CATEGORIA = :nombre_categoria, GENERO = :genero WHERE ID_CATEGORIA = :id`;
+        const query = `UPDATE CATEGORIA SET NOMBRE_CATEGORIA = :nombre_categoria WHERE ID_CATEGORIA = :id`;
         const params = {
             nombre_categoria,
-            genero,
             id
         };
         const result = await db.executeQuery(query, params);
@@ -109,8 +106,7 @@ const updateCategory = async (req, res) => {
             res.status(200).json({
                 message: 'Categoría actualizada exitosamente',
                 id,
-                nombre_categoria,
-                genero
+                nombre_categoria
             });
         } else {
             throw new Error('No se pudo actualizar la categoría');
