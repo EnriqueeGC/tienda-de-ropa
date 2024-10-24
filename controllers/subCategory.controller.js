@@ -32,6 +32,25 @@ const getAll = async (req, res) => {
     }
 }
 
+const getSubcategoriesByCategoryId = async (req, res) => {
+    const { id_categoria } = req.params;  // Obtener el ID de la categoría desde los parámetros de la ruta
+
+    try {
+        // Modificar la consulta SQL para filtrar por ID de categoría
+        const query = `SELECT * FROM subcategorias WHERE ID_CATEGORIA = :id_categoria`;
+        const result = await db.executeQuery(query, [id_categoria]);  // Pasar el ID como parámetro
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'No se encontraron subcategorías para esta categoría' });
+        }
+
+        res.status(200).json(result.rows);
+    } catch (error) {
+        console.error('Error interno del servidor', error);
+        res.status(500).json({ error: 'Error al obtener las subcategorías' });
+    }
+}
+
 const deleteById = async (req, res) => {
     const { id_subcategoria } = req.params;
 
@@ -71,5 +90,6 @@ const deleteById = async (req, res) => {
 module.exports = {
     create,
     getAll,
+    getSubcategoriesByCategoryId,
     deleteById
 };
