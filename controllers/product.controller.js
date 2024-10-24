@@ -18,7 +18,7 @@ const createProduct = async (req, res) => {
         const query = `INSERT INTO PRODUCTO (NOMBRE_PRODUCTO, DESCRIPCION, PRECIO, ID_SUBCATEGORIA, ID_DESCUENTO, GENERO, URL_IMAGEN) VALUES (:nombre_producto, :descripcion, :precio, :id_subcategoria, :id_descuento, :genero, :url_imagen) RETURNING ID_PRODUCTO INTO :id_producto`;
         const id_producto = { type: db.oracledb.NUMBER, dir: db.oracledb.BIND_OUT };
 
-        const params = { nombre_producto, descripcion, precio, id_subcategoria, id_descuento, url_imagen, genero,id_producto };
+        const params = { nombre_producto, descripcion, precio, id_subcategoria, id_descuento, url_imagen, genero, id_producto };
         const result = await db.executeQuery(query, params);
 
         if (result.outBinds && result.outBinds.id_producto) {
@@ -45,12 +45,13 @@ const getAllProducts = async (req, res) => {
     try {
         //const query = `SELECT * FROM PRODUCTO`;
         const query = `
-            SELECT 
+           SELECT 
                 P.ID_PRODUCTO, 
                 P.NOMBRE_PRODUCTO,
                 P.DESCRIPCION,
                 P.PRECIO,
                 P.GENERO,
+                S.NOMBRE, -- Incluimos el nombre de la subcategoría
                 COALESCE(LISTAGG(T.NOMBRE_TALLA || ' (' || V.STOCK || ')', ', ') WITHIN GROUP (ORDER BY T.NOMBRE_TALLA), 'Sin stock') AS TALLAS_STOCK
             FROM 
                 PRODUCTO P
@@ -58,8 +59,10 @@ const getAllProducts = async (req, res) => {
                 VARIANTES_PRODUCTO V ON P.ID_PRODUCTO = V.ID_PRODUCTO
             LEFT JOIN 
                 TALLA T ON V.ID_TALLA = T.ID_TALLA
+            LEFT JOIN
+                SUBCATEGORIAS S ON P.ID_SUBCATEGORIA = S.ID_SUBCATEGORIA -- Hacemos el join con la tabla de subcategorías
             GROUP BY 
-                P.ID_PRODUCTO, P.NOMBRE_PRODUCTO, P.DESCRIPCION, P.PRECIO, P.GENERO`
+                P.ID_PRODUCTO, P.NOMBRE_PRODUCTO, P.DESCRIPCION, P.PRECIO, P.GENERO, S.NOMBRE`
         const result = await db.executeQuery(query);
 
         if (result.rows.length === 0) {
@@ -167,7 +170,7 @@ const updateProductById = async (req, res) => {
                 URL_IMAGEN = COALESCE(:url_imagen, URL_IMAGEN) -- Actualizar la imagen solo si hay nueva
             WHERE ID_PRODUCTO = :id_producto      
         `;
-        const params = [nombre_producto, descripcion, precio, id_subcategoria, id_descuento, genero, url_imagen,  id_producto];
+        const params = [nombre_producto, descripcion, precio, id_subcategoria, id_descuento, genero, url_imagen, id_producto];
         const result = await db.executeQuery(query, params);
 
         if (result.rowsAffected === 0) {
