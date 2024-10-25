@@ -18,7 +18,7 @@ const createProduct = async (req, res) => {
         const query = `INSERT INTO PRODUCTO (NOMBRE_PRODUCTO, DESCRIPCION, PRECIO, ID_SUBCATEGORIA, ID_DESCUENTO, GENERO, MARCA, URL_IMAGEN) VALUES (:nombre_producto, :descripcion, :precio, :id_subcategoria, :id_descuento, :genero, :marca, :url_imagen) RETURNING ID_PRODUCTO INTO :id_producto`;
         const id_producto = { type: db.oracledb.NUMBER, dir: db.oracledb.BIND_OUT };
 
-        const params = { nombre_producto, descripcion, precio, id_subcategoria, id_descuento, url_imagen, genero, id_producto };
+        const params = { nombre_producto, descripcion, precio, id_subcategoria, id_descuento,  genero, marca, url_imagen, id_producto };
         const result = await db.executeQuery(query, params);
 
         if (result.outBinds && result.outBinds.id_producto) {
