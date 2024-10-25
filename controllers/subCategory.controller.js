@@ -51,6 +51,30 @@ const getSubcategoriesByCategoryId = async (req, res) => {
     }
 }
 
+const updateById = async (req, res) => {
+    const { id_subcategoria } = req.params;
+    const { nombre } = req.body;
+
+    try {
+        const query = `UPDATE subcategorias SET nombre = :nombre WHERE id_subcategoria = :id_subcategoria`;
+        const params = { id_subcategoria, nombre };
+        const result = await db.executeQuery(query, params);
+
+        if (result.rowsAffected === 0) {
+            return res.status(404).json({ message: `Subcategoría no encontrada con el id: ${id_subcategoria}` });
+        }
+
+        res.status(200).json({
+            message: 'Subcategoría actualizada exitosamente',
+            id_subcategoria,
+            nombre
+        });
+    } catch (error) {
+        console.error('Error interno del servidor', error);
+        res.status(500).json({ error: 'Error al actualizar la subcategoría' });
+    }
+}
+
 const deleteById = async (req, res) => {
     const { id_subcategoria } = req.params;
 
@@ -91,5 +115,6 @@ module.exports = {
     create,
     getAll,
     getSubcategoriesByCategoryId,
+    updateById,
     deleteById
 };
