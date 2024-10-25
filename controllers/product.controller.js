@@ -5,7 +5,7 @@ const cloudinary = require('cloudinary').v2;
 const upload = multer({ storage });
 
 const createProduct = async (req, res) => {
-    const { nombre_producto, descripcion, precio, id_subcategoria, id_descuento, genero } = req.body;
+    const { nombre_producto, descripcion, precio, id_subcategoria, id_descuento, genero, marca } = req.body;
 
     try {
         // Subir imagen a Cloudinary
@@ -15,7 +15,7 @@ const createProduct = async (req, res) => {
             url_imagen = result.secure_url; // Obtener la URL segura de la imagen
         }
 
-        const query = `INSERT INTO PRODUCTO (NOMBRE_PRODUCTO, DESCRIPCION, PRECIO, ID_SUBCATEGORIA, ID_DESCUENTO, GENERO, URL_IMAGEN) VALUES (:nombre_producto, :descripcion, :precio, :id_subcategoria, :id_descuento, :genero, :url_imagen) RETURNING ID_PRODUCTO INTO :id_producto`;
+        const query = `INSERT INTO PRODUCTO (NOMBRE_PRODUCTO, DESCRIPCION, PRECIO, ID_SUBCATEGORIA, ID_DESCUENTO, GENERO, MARCA, URL_IMAGEN) VALUES (:nombre_producto, :descripcion, :precio, :id_subcategoria, :id_descuento, :genero, :marca, :url_imagen) RETURNING ID_PRODUCTO INTO :id_producto`;
         const id_producto = { type: db.oracledb.NUMBER, dir: db.oracledb.BIND_OUT };
 
         const params = { nombre_producto, descripcion, precio, id_subcategoria, id_descuento, url_imagen, genero, id_producto };
@@ -32,6 +32,7 @@ const createProduct = async (req, res) => {
                 id_subcategoria,
                 id_descuento,
                 genero,
+                marca,
                 url_imagen
             });
         }
@@ -51,6 +52,7 @@ const getAllProducts = async (req, res) => {
                 P.DESCRIPCION,
                 P.PRECIO,
                 P.GENERO,
+                P.MARCA,
                 S.NOMBRE, -- Incluimos el nombre de la subcategoría
                 COALESCE(LISTAGG(T.NOMBRE_TALLA || ' (' || V.STOCK || ')', ', ') WITHIN GROUP (ORDER BY T.NOMBRE_TALLA), 'Sin stock') AS TALLAS_STOCK
             FROM 
@@ -62,7 +64,7 @@ const getAllProducts = async (req, res) => {
             LEFT JOIN
                 SUBCATEGORIAS S ON P.ID_SUBCATEGORIA = S.ID_SUBCATEGORIA -- Hacemos el join con la tabla de subcategorías
             GROUP BY 
-                P.ID_PRODUCTO, P.NOMBRE_PRODUCTO, P.DESCRIPCION, P.PRECIO, P.GENERO, S.NOMBRE`
+                P.ID_PRODUCTO, P.NOMBRE_PRODUCTO, P.DESCRIPCION, P.PRECIO, P.GENERO, P.MARCA, S.NOMBRE`
         const result = await db.executeQuery(query);
 
         if (result.rows.length === 0) {
@@ -147,7 +149,7 @@ const deleteProductById = async (req, res) => {
 };
 
 const updateProductById = async (req, res) => {
-    const { nombre_producto, descripcion, precio, id_subcategoria, id_descuento, genero } = req.body;
+    const { nombre_producto, descripcion, precio, id_subcategoria, id_descuento, genero, marca } = req.body;
     const { id_producto } = req.params;
 
     try {
@@ -167,10 +169,11 @@ const updateProductById = async (req, res) => {
                 ID_SUBCATEGORIA = :id_subcategoria,
                 ID_DESCUENTO = :id_descuento,
                 GENERO = :genero,
+                MARCA = :marca,
                 URL_IMAGEN = COALESCE(:url_imagen, URL_IMAGEN) -- Actualizar la imagen solo si hay nueva
             WHERE ID_PRODUCTO = :id_producto      
         `;
-        const params = [nombre_producto, descripcion, precio, id_subcategoria, id_descuento, genero, url_imagen, id_producto];
+        const params = [nombre_producto, descripcion, precio, id_subcategoria, id_descuento, genero, marca, url_imagen, id_producto];
         const result = await db.executeQuery(query, params);
 
         if (result.rowsAffected === 0) {
@@ -186,6 +189,7 @@ const updateProductById = async (req, res) => {
             id_subcategoria,
             id_descuento,
             genero,
+            marca,
             url_imagen
         })
     } catch (err) {
