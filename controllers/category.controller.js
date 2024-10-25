@@ -1,7 +1,7 @@
 const db = require('../config/db.js');
 
 const createCategory = async (req, res) => {
-    const { nombre_categoria, genero } = req.body;
+    const { nombre_categoria } = req.body;
 
     try {
         const query = `INSERT INTO CATEGORIA (NOMBRE_CATEGORIA) VALUES (:nombre_categoria) RETURNING ID_CATEGORIA INTO :id_categoria`;
@@ -92,7 +92,7 @@ const getCategoryByName = async (req, res) => {
 
 const updateCategory = async (req, res) => {
     const { id } = req.params;
-    const { nombre_categoria, genero } = req.body;
+    const { nombre_categoria } = req.body;
 
     try {
         const query = `UPDATE CATEGORIA SET NOMBRE_CATEGORIA = :nombre_categoria WHERE ID_CATEGORIA = :id`;
