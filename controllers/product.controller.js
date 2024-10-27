@@ -53,6 +53,7 @@ const getAllProducts = async (req, res) => {
                 P.PRECIO,
                 P.GENERO,
                 P.MARCA,
+                p.URL_IMAGEN,
                 S.NOMBRE, -- Incluimos el nombre de la subcategoría
                 COALESCE(LISTAGG(T.NOMBRE_TALLA || ' (' || V.STOCK || ')', ', ') WITHIN GROUP (ORDER BY T.NOMBRE_TALLA), 'Sin stock') AS TALLAS_STOCK
             FROM 
@@ -64,7 +65,7 @@ const getAllProducts = async (req, res) => {
             LEFT JOIN
                 SUBCATEGORIAS S ON P.ID_SUBCATEGORIA = S.ID_SUBCATEGORIA -- Hacemos el join con la tabla de subcategorías
             GROUP BY 
-                P.ID_PRODUCTO, P.NOMBRE_PRODUCTO, P.DESCRIPCION, P.PRECIO, P.GENERO, P.MARCA, S.NOMBRE`
+                P.ID_PRODUCTO, P.NOMBRE_PRODUCTO, P.DESCRIPCION, P.PRECIO, P.GENERO, P.MARCA, S.NOMBRE, P.URL_IMAGEN`
         const result = await db.executeQuery(query);
 
         if (result.rows.length === 0) {
