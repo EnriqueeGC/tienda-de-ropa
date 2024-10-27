@@ -83,7 +83,29 @@ const getProductById = async (req, res) => {
     const { id_producto } = req.params;
 
     try {
-        const query = `SELECT * FROM PRODUCTO WHERE ID_PRODUCTO = :id_producto`;
+        const query = `
+            SELECT
+                P.ID_PRODUCTO,
+                P.NOMBRE_PRODUCTO,
+                P.DESCRIPCION,
+                P.PRECIO,
+                P.GENERO,
+                P.MARCA,
+                P.URL_IMAGEN,
+                S.NOMBRE AS NOMBRE_SUBCATEGORIA,
+                JSON_ARRAYAGG(JSON_OBJECT('talla' VALUE T.NOMBRE_TALLA, 'stock' VALUE V.STOCK)) AS TALLAS_STOCK
+            FROM
+                PRODUCTO P
+            LEFT JOIN
+                VARIANTES_PRODUCTO V ON P.ID_PRODUCTO = V.ID_PRODUCTO
+            LEFT JOIN
+                TALLA T ON V.ID_TALLA = T.ID_TALLA
+            LEFT JOIN
+                SUBCATEGORIAS S ON P.ID_SUBCATEGORIA = S.ID_SUBCATEGORIA
+            WHERE
+                P.ID_PRODUCTO = :id_producto
+            GROUP BY
+                P.ID_PRODUCTO, P.NOMBRE_PRODUCTO, P.DESCRIPCION, P.PRECIO, P.GENERO, P.MARCA, S.NOMBRE, P.URL_IMAGEN`;
         const params = [id_producto];
         const result = await db.executeQuery(query, params);
 
