@@ -43,6 +43,11 @@ const createProduct = async (req, res) => {
 }
 
 const getAllProducts = async (req, res) => {
+    const { page = 1, limit = 10 } = req.query;
+
+    // Calcula el offset en función de la página y el límite
+    const offset = (page - 1) * limit;
+
     try {
         //const query = `SELECT * FROM PRODUCTO`;
         const query = `
@@ -65,8 +70,11 @@ const getAllProducts = async (req, res) => {
         LEFT JOIN
             SUBCATEGORIAS S ON P.ID_SUBCATEGORIA = S.ID_SUBCATEGORIA
         GROUP BY 
-            P.ID_PRODUCTO, P.NOMBRE_PRODUCTO, P.DESCRIPCION, P.PRECIO, P.GENERO, P.MARCA, S.NOMBRE, P.URL_IMAGEN`;
-        const result = await db.executeQuery(query);
+            P.ID_PRODUCTO, P.NOMBRE_PRODUCTO, P.DESCRIPCION, P.PRECIO, P.GENERO, P.MARCA, S.NOMBRE, P.URL_IMAGEN
+            OFFSET :offset ROWS FETCH NEXT :limit ROWS ONLY`; // Añade paginación en SQL
+
+        const params = [offset, limit];
+        const result = await db.executeQuery(query, params);
 
         if (result.rows.length === 0) {
             return res.status(404).json({ message: 'Productos no encontrados' });
@@ -122,7 +130,10 @@ const getProductById = async (req, res) => {
 
 //obtener productos por genero
 const getProductsByGender = async (req, res) => {
-    const { genero } = req.query;
+    const { genero, page = 1, limit = 10 } = req.query;
+
+    // Calcula el offset en función de la página y el límite
+    const offset = (page - 1) * limit;
 
     try {
         const query = `
@@ -146,21 +157,22 @@ const getProductsByGender = async (req, res) => {
             WHERE
                 P.GENERO = :genero
             GROUP BY
-                P.ID_PRODUCTO, P.NOMBRE_PRODUCTO, P.DESCRIPCION, P.PRECIO, P.MARCA, S.NOMBRE, P.URL_IMAGEN`;
-        const params = [genero];
+                P.ID_PRODUCTO, P.NOMBRE_PRODUCTO, P.DESCRIPCION, P.PRECIO, P.MARCA, S.NOMBRE, P.URL_IMAGEN
+            OFFSET :offset ROWS FETCH NEXT :limit ROWS ONLY`; // Añade paginación en SQL
+
+        const params = [genero, offset, limit];
         const result = await db.executeQuery(query, params);
 
         if (result.rows.length === 0) {
             return res.status(404).json({ message: `No existen productos para el género ${genero}` });
         }
 
-        res.status(200).json(result.rows)
+        res.status(200).json(result.rows);
     } catch (err) {
         console.error('Error al obtener los productos', err);
         res.status(500).json({ message: 'Error al obtener los productos' });
     }
-}
-
+};
 
 const getProductByName = async (req, res) => {
     const { nombre_producto } = req.query;
