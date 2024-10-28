@@ -7,6 +7,7 @@ const router = express.Router();
 
 router.post('/create', upload.single('image'), productMiddleware.validateArticle, productMiddleware.validateResults, productController.createProduct);
 router.get('/getAll', productController.getAllProducts);
+router.get('/getProductByGender', productController.getProductsByGender);
 router.get('/getProductById/:id_producto', productController.getProductById);
 router.get('/getProductByName', productController.getProductByName);
 router.delete('/deleteProductById/:id_producto', productController.deleteProductById);

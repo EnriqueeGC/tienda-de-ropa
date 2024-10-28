@@ -120,6 +120,48 @@ const getProductById = async (req, res) => {
     }
 }
 
+//obtener productos por genero
+const getProductsByGender = async (req, res) => {
+    const { genero } = req.query;
+
+    try {
+        const query = `
+            SELECT
+                P.ID_PRODUCTO,
+                P.NOMBRE_PRODUCTO,
+                P.DESCRIPCION,
+                P.PRECIO,
+                P.MARCA,
+                P.URL_IMAGEN,
+                S.NOMBRE AS NOMBRE_SUBCATEGORIA,
+                JSON_ARRAYAGG(JSON_OBJECT('talla' VALUE T.NOMBRE_TALLA, 'stock' VALUE V.STOCK)) AS TALLAS_STOCK
+            FROM
+                PRODUCTO P
+            LEFT JOIN
+                VARIANTES_PRODUCTO V ON P.ID_PRODUCTO = V.ID_PRODUCTO
+            LEFT JOIN
+                TALLA T ON V.ID_TALLA = T.ID_TALLA
+            LEFT JOIN
+                SUBCATEGORIAS S ON P.ID_SUBCATEGORIA = S.ID_SUBCATEGORIA
+            WHERE
+                P.GENERO = :genero
+            GROUP BY
+                P.ID_PRODUCTO, P.NOMBRE_PRODUCTO, P.DESCRIPCION, P.PRECIO, P.MARCA, S.NOMBRE, P.URL_IMAGEN`;
+        const params = [genero];
+        const result = await db.executeQuery(query, params);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: `No existen productos para el género ${genero}` });
+        }
+
+        res.status(200).json(result.rows)
+    } catch (err) {
+        console.error('Error al obtener los productos', err);
+        res.status(500).json({ message: 'Error al obtener los productos' });
+    }
+}
+
+
 const getProductByName = async (req, res) => {
     const { nombre_producto } = req.query;
 
@@ -224,6 +266,7 @@ const updateProductById = async (req, res) => {
 module.exports = {
     createProduct,
     getAllProducts,
+    getProductsByGender,
     getProductById,
     getProductByName,
     deleteProductById,
