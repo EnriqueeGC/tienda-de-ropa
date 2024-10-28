@@ -174,6 +174,109 @@ const getProductsByGender = async (req, res) => {
     }
 };
 
+const getProductsBySubcategoryAndGender = async (req, res) => {
+    const { genero, id_subcategoria, page = 1, limit = 10 } = req.query;
+
+    const offset = (page - 1) * limit;
+
+    try {
+        const query = `
+            SELECT
+                P.ID_PRODUCTO,
+                P.NOMBRE_PRODUCTO,
+                P.DESCRIPCION,
+                P.PRECIO,
+                P.MARCA,
+                P.URL_IMAGEN,
+                S.NOMBRE AS NOMBRE_SUBCATEGORIA,
+                JSON_ARRAYAGG(JSON_OBJECT('talla' VALUE T.NOMBRE_TALLA, 'stock' VALUE V.STOCK)) AS TALLAS_STOCK
+            FROM
+                PRODUCTO P
+            LEFT JOIN
+                VARIANTES_PRODUCTO V ON P.ID_PRODUCTO = V.ID_PRODUCTO
+            LEFT JOIN
+                TALLA T ON V.ID_TALLA = T.ID_TALLA
+            LEFT JOIN
+                SUBCATEGORIAS S ON P.ID_SUBCATEGORIA = S.ID_SUBCATEGORIA
+            WHERE
+                P.GENERO = :genero
+                AND P.ID_SUBCATEGORIA = :id_subcategoria
+            GROUP BY
+                P.ID_PRODUCTO, P.NOMBRE_PRODUCTO, P.DESCRIPCION, P.PRECIO, P.MARCA, S.NOMBRE, P.URL_IMAGEN
+            OFFSET :offset ROWS FETCH NEXT :limit ROWS ONLY`;
+
+        const params = [genero, id_subcategoria, offset, limit];
+        const result = await db.executeQuery(query, params);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: `No existen productos para el género ${genero} en la subcategoría ${id_subcategoria}` });
+        }
+
+        res.status(200).json(result.rows);
+    } catch (err) {
+        console.error('Error al obtener los productos por subcategoría y género', err);
+        res.status(500).json({ message: 'Error al obtener los productos' });
+    }
+};
+
+const getProductsByCategoryAndGender = async (req, res) => {
+    const { genero, id_categoria, page = 1, limit = 10 } = req.query;
+
+    const offset = (page - 1) * limit;
+
+    try {
+        const query = `
+            SELECT
+                P.ID_PRODUCTO,
+                P.NOMBRE_PRODUCTO,
+                P.DESCRIPCION,
+                P.PRECIO,
+                P.MARCA,
+                P.URL_IMAGEN,
+                C.NOMBRE_CATEGORIA,
+                S.NOMBRE AS NOMBRE_SUBCATEGORIA,
+                JSON_ARRAYAGG(
+                    JSON_OBJECT('talla' VALUE T.NOMBRE_TALLA, 'stock' VALUE V.STOCK)
+                ) AS TALLAS_STOCK
+            FROM
+                PRODUCTO P
+            LEFT JOIN
+                VARIANTES_PRODUCTO V ON P.ID_PRODUCTO = V.ID_PRODUCTO
+            LEFT JOIN
+                TALLA T ON V.ID_TALLA = T.ID_TALLA
+            LEFT JOIN
+                SUBCATEGORIAS S ON P.ID_SUBCATEGORIA = S.ID_SUBCATEGORIA
+            LEFT JOIN
+                CATEGORIA C ON S.ID_CATEGORIA = C.ID_CATEGORIA
+            WHERE
+                P.GENERO = :genero
+                AND C.ID_CATEGORIA = :id_categoria
+            GROUP BY
+                P.ID_PRODUCTO, 
+                P.NOMBRE_PRODUCTO, 
+                P.DESCRIPCION, 
+                P.PRECIO, 
+                P.MARCA, 
+                P.URL_IMAGEN, 
+                C.NOMBRE_CATEGORIA, 
+                S.NOMBRE
+            OFFSET :offset ROWS FETCH NEXT :limit ROWS ONLY`;
+
+        const params = [genero, id_categoria, offset, limit];
+        const result = await db.executeQuery(query, params);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: `No existen productos para el género ${genero} en la categoría ${id_categoria}` });
+        }
+
+        res.status(200).json(result.rows);
+    } catch (err) {
+        console.error('Error al obtener productos por categoría y género', err);
+        res.status(500).json({ message: 'Error al obtener los productos' });
+    }
+};
+
+
 const getProductByName = async (req, res) => {
     const { nombre_producto } = req.query;
 
@@ -279,6 +382,8 @@ module.exports = {
     createProduct,
     getAllProducts,
     getProductsByGender,
+    getProductsBySubcategoryAndGender,
+    getProductsByCategoryAndGender,
     getProductById,
     getProductByName,
     deleteProductById,
