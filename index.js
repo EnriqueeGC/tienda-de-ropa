@@ -9,6 +9,7 @@ const authRoutes = require('./routes/auth.routes.js')
 const sizesRoutes = require('./routes/sizes.routes.js');
 const variantsProductRoutes = require('./routes/variantsProduct.routes.js');
 const subCategoryRoutes = require('./routes/subCategory.routes.js');
+const cartRoutes = require('./routes/shoppingCart.routes.js');
 
 const app = express();
 const port = process.env.PORT || 3000;  // Usa el puerto de Render si está disponible, si no, el puerto 3000
@@ -24,6 +25,7 @@ app.use('/api/discounts/', discountRoutes);
 app.use('/api/sizes/', sizesRoutes);
 app.use('/api/variants/', variantsProductRoutes);
 app.use('/api/subcategories/', subCategoryRoutes);
+app.use('/api/cart/', cartRoutes);
 app.use('/api/', authRoutes); // inicio de sesion
 
 app.listen(port, () => {

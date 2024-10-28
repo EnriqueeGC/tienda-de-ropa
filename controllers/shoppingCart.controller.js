@@ -1,91 +1,130 @@
 const db = require('../config/db.js');
 
-// rout /createShoppingCart
-const manageShoppingCart = async (req, res) => {
-    const { id_usuario, id_producto, cantidad } = req.body;
+// Agregar un producto al carrito
+const addToCart = async (req, res) => {
+    const { id_producto, cantidad, id_usuario, id_variante } = req.body; // Agregar id_talla
 
     try {
-        // 1. Verificar si el usuario ya tiene un carrito activo
-        let query = `SELECT ID FROM CARRITO WHERE USUARIOID = :id_usuario`;
-        let params = [id_usuario];
-        let result = await db.executeQuery(query, params);
+        // Verificar si el carrito del usuario ya existe
+        let query = `SELECT * FROM CARRITO WHERE USUARIOID = :id_usuario`;
+        let params = [ id_usuario ];
+        let carrito = await db.executeQuery(query, params);
 
-        let id_carrito;
-        
-        if (result.rows.length === 0) {
-            // 2. Si no tiene carrito, crear uno nuevo
-            query = `INSERT INTO CARRITO (USUARIOID, FECHA_CREACION) VALUES (:id_usuario, SYSDATE) RETURNING ID INTO :id_carrito`;
-            params = [id_usuario];
-            const newCart = await db.executeQuery(query, params);
-            id_carrito = newCart.outBinds.id_carrito;  // Capturar el ID del carrito recién creado
+        if (carrito.rows.length === 0) {
+            // Crear un nuevo carrito si no existe
+            query = `INSERT INTO carrito (USUARIOID) VALUES (:id_usuario) RETURNING ID_CARRITO INTO :id_carrito`;
+            const id_carrito = { type: db.oracledb.NUMBER, dir: db.oracledb.BIND_OUT };
+            params = [ id_usuario, id_carrito ];
+            const result = await db.executeQuery(query, params);
+            
+            if (result.outBinds && result.outBinds.id_carrito) {
+                carrito = { id_carrito: result.outBinds.id_carrito[0] };
+            } else {
+                throw new Error("No se pudo crear el carrito");
+            }
         } else {
-            // 3. Si ya existe un carrito, obtener su ID
-            id_carrito = result.rows[0].ID;
+            // Obtener el id del carrito existente
+            carrito = carrito.rows[0];
+            // console.log('ID CARRITO', carrito.ID_CARRITO);
         }
 
-        // 4. Insertar el producto en el carrito (detalle)
-        query = `INSERT INTO DETALLESCARRITO (ID_CARRITO, ID_PRODUCTO, CANTIDAD) VALUES (:id_carrito, :id_producto, :cantidad)`;
-        params = [id_carrito, id_producto, cantidad];
+        // Verificar si el producto ya está en el carrito
+        query = `SELECT * FROM DETALLESCARRITO WHERE id_carrito = :id_carrito AND id_producto = :id_producto AND id_variante = :id_variante`;
+        params = { id_carrito: carrito.ID_CARRITO, id_producto, id_variante }; // Incluir id_talla en los parámetros
+        const detalleCarrito = await db.executeQuery(query, params);
+
+        if (detalleCarrito.rows.length > 0) {
+            // Actualizar la cantidad del producto en el carrito
+            await updateCartItem(detalleCarrito.rows[0].id_detalle_carrito, cantidad);
+        } else {
+            // Asegúrate de que id_carrito tenga un valor antes de la inserción
+            if (!carrito.ID_CARRITO) {
+                throw new Error("ID del carrito no definido");
+            }
+        
+            // Agregar el producto al carrito si no está presente
+            query = `INSERT INTO Detallescarrito (id_carrito, id_producto, cantidad, id_variante) VALUES (:id_carrito, :id_producto, :cantidad, :id_variante)`; // Incluir id_talla
+            params = { id_carrito: carrito.ID_CARRITO, id_producto, cantidad, id_variante };
+        
+            await db.executeQuery(query, params);
+        }
+    
+        res.status(200).json({ message: "Producto agregado al carrito correctamente." });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Error al agregar producto al carrito." });
+    }
+};
+
+
+// Función para actualizar la cantidad de un producto en el carrito
+const updateCartItem = async (id_detalle_carrito, nuevaCantidad) => {
+    const query = `UPDATE Detallescarrito SET cantidad = :cantidad WHERE id_detalle_carrito = :id_detalle_carrito`;
+    const params = { cantidad: nuevaCantidad, id_detalle_carrito };
+    await db.executeQuery(query, params);
+};
+
+// Obtener detalles del carrito del usuario
+const getCartDetails = async (req, res) => {
+    const { id_usuario } = req.params;
+
+    try {
+        const query = `SELECT * FROM carrito WHERE USUARIOID = :id_usuario`;
+        const params = { id_usuario };
+        const carrito = await db.executeQuery(query, params);
+
+        if (carrito.rows.length === 0) {
+            return res.status(404).json({ message: "Carrito no encontrado." });
+        }
+
+        const id_carrito = carrito.rows[0].ID_CARRITO;
+
+        // Obtener los detalles del carrito con los datos del producto y variantes
+        const detallesQuery = `
+         SELECT 
+                dc.id_detalle_carrito, 
+                dc.id_producto, 
+                dc.cantidad, 
+                p.nombre_producto, 
+                p.precio, 
+                p.url_imagen, 
+                v.id_variante, 
+                t.nombre_talla
+            FROM Detallescarrito dc
+            JOIN PRODUCTO p ON dc.id_producto = p.id_producto
+            JOIN VARIANTES_PRODUCTO v ON dc.id_variante = v.id_variante
+            JOIN TALLA t ON v.id_talla = t.id_talla
+            WHERE dc.id_carrito = :id_carrito`;
+        
+        const detalles = await db.executeQuery(detallesQuery, { id_carrito });
+
+        res.status(200).json({ carrito: carrito.rows[0], detalles: detalles.rows });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Error al obtener los detalles del carrito." });
+    }
+};
+
+
+const deleteCartItem = async (req, res) => {
+    const { id_detalle_carrito } = req.body;
+
+    try {
+        const query = `DELETE FROM Detallescarrito WHERE id_detalle_carrito = :id_detalle_carrito`;
+        const params = { id_detalle_carrito };
         await db.executeQuery(query, params);
 
-        return res.status(200).json({ message: 'Producto agregado al carrito exitosamente' });
-
+        res.status(200).json({ message: "Producto eliminado del carrito correctamente." });
     } catch (error) {
-        console.error('Error al manejar el carrito:', error);
-        return res.status(500).json({ message: 'Error interno del servidor' });
+        console.error(error);
+        res.status(500).json({ error: "Error al eliminar producto del carrito." });
     }
-}
+};
 
-// actualizar cantidad de producto en carrito
-const updateProductQuantity = async (req, res) => {
-    const { id_carrito, id_producto, cantidad } = req.body;
 
-    try {
-        const query = `UPDATE DETALLESCARRITO SET CANTIDAD = :cantidad WHERE ID_CARRITO = :id_carrito AND ID_PRODUCTO = :id_producto`;
-        const params = [cantidad, id_carrito, id_producto];
-
-        const result = await db.executeQuery(query, params);
-
-        return res.status(200).json({ message: 'Cantidad de producto actualizada exitosamente' });
-
-    } catch (error) {
-        console.error('Error al actualizar la cantidad del producto en el carrito:', error);
-        return res.status(500).json({ message: 'Error interno del servidor' });
-    }
-}
-
-// eliminar producto de carrito
-const deleteProductFromCart = async (req, res) => {
-    const { id_carrito, id_producto } = req.body;
-
-    try {
-        const query = `DELETE FROM DETALLESCARRITO WHERE ID_DETALLE_CARRITO = :id_carrito AND ID_PRODUCTO = :id_producto`;
-        const params = [id_carrito, id_producto];
-
-        const result = await db.executeQuery(query, params);
-
-        return res.status(200).json({ message: 'Producto eliminado del carrito exitosamente' });
-
-    } catch (error) {
-        console.error('Error al eliminar el producto del carrito:', error);
-        return res.status(500).json({ message: 'Error interno del servidor' });
-    }
-}
-
-// obtener carrito por id de usuario
-const getCartByUserId = async (req, res) => {
-    const { id_usuario } = req.body;
-
-    try {
-        const query = `SELECT * FROM CARRITO WHERE USUARIOID = :id_usuario`;
-        const params = [id_usuario];
-
-        const result = await db.executeQuery(query, params);
-
-        return res.status(200).json({ carrito: result.rows });
-
-    } catch (error) {
-        console.error('Error al obtener el carrito:', error);
-        return res.status(500).json({ message: 'Error interno del servidor' });
-    }
-}
+module.exports = {
+    addToCart,
+    getCartDetails,
+    updateCartItem,
+    deleteCartItem
+};
