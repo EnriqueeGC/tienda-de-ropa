@@ -210,7 +210,7 @@ const getProductsBySubcategoryAndGender = async (req, res) => {
         const result = await db.executeQuery(query, params);
 
         if (result.rows.length === 0) {
-            return res.status(404).json({ message: `No existen productos para el género ${genero} en la subcategoría ${id_subcategoria}` });
+            return res.status(404).json({ message: `No existen productos para ${genero} en la subcategoría` });
         }
 
         res.status(200).json(result.rows);
