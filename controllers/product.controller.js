@@ -71,7 +71,7 @@ const getAllProducts = async (req, res) => {
         LEFT JOIN
             SUBCATEGORIAS S ON P.ID_SUBCATEGORIA = S.ID_SUBCATEGORIA
         GROUP BY 
-            P.ID_PRODUCTO, P.NOMBRE_PRODUCTO, P.DESCRIPCION, P.PRECIO, P.GENERO, P.MARCA, S.NOMBRE, P.URL_IMAGEN
+            P.ID_PRODUCTO, P.NOMBRE_PRODUCTO, P.DESCRIPCION, P.PRECIO, P.GENERO, P.MARCA, S.NOMBRE, P.URL_IMAGEN, S.ID_SUBCATEGORIA
             OFFSET :offset ROWS FETCH NEXT :limit ROWS ONLY`; // Añade paginación en SQL
 
         const params = [offset, limit];
