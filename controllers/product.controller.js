@@ -59,6 +59,7 @@ const getAllProducts = async (req, res) => {
             P.GENERO,
             P.MARCA,
             P.URL_IMAGEN,
+            S.ID_SUBCATEGORIA,
             S.NOMBRE AS NOMBRE_SUBCATEGORIA,
             JSON_ARRAYAGG(JSON_OBJECT('talla' VALUE T.NOMBRE_TALLA, 'stock' VALUE V.STOCK)) AS TALLAS_STOCK
         FROM 
