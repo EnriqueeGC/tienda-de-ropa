@@ -105,8 +105,8 @@ const updateDiscount = async (req, res) => {
         SET 
             TIPO_DESCUENTO = :tipo_descuento, 
             VALOR_DESCUENTO = :valor_descuento, 
-            FECHA_INICIO = :fecha_inicio, 
-            FECHA_FIN = :fecha_fin 
+            FECHA_INICIO = TO_DATE(:fecha_inicio, 'YYYY-MM-DD'), 
+            FECHA_FIN = TO_DATE(:fecha_fin, 'YYYY-MM-DD')
             WHERE ID_DESCUENTO = :id`;
         const params = {
             tipo_descuento,

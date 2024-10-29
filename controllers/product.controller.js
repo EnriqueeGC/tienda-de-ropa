@@ -43,7 +43,7 @@ const createProduct = async (req, res) => {
 }
 
 const getAllProducts = async (req, res) => {
-    const { page = 1, limit = 10 } = req.query;
+    const { page = 1, limit = 12 } = req.query;
 
     // Calcula el offset en función de la página y el límite
     const offset = (page - 1) * limit;
