@@ -3,6 +3,7 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const { registerPayment } = require('./payment.controller.js');
 
 const handlePaymentIntentSucceeded = async (req, res) => {
+  console.log('Webhook received!');
     const sig = req.headers['stripe-signature'];
   const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 

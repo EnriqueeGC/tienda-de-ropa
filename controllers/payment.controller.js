@@ -4,7 +4,7 @@ const db = require('../config/db.js');
 const registerPayment = async (id_pedido, paymentIntent) => {
     const {id: id_transaccion, amount_received, currency} = paymentIntent;
     const monto_pago = amount_received / 100;
-    
+    console.log('Payment received:', monto_pago, currency, id_transaccion);
     try {
         const query = `INSERT INTO PAGO (ID_PEDIDO, METODO_PAGO, ESTADO_PAGO, MONTO_PAGO, ID_TRANSACCION, FECHA_PAGO) VALUES (:id_pedido, :metodo_pago, :estado_pago, :monto_pago, :id_transaccion, SYSDATE)`;
         const params = {
