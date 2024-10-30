@@ -1,6 +1,6 @@
 require('dotenv').config();
 const express = require('express');
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+// const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const cors = require('cors');
 
 const userRoutes = require('./routes/user.routes.js');
@@ -12,6 +12,8 @@ const sizesRoutes = require('./routes/sizes.routes.js');
 const variantsProductRoutes = require('./routes/variantsProduct.routes.js');
 const subCategoryRoutes = require('./routes/subCategory.routes.js');
 const cartRoutes = require('./routes/shoppingCart.routes.js');
+const paymentRoutes = require('./routes/payment.routes.js');
+const webhookRoutes = require('./routes/webhook.routes.js'); 
 
 const app = express();
 const port = process.env.PORT || 3000;  // Usa el puerto de Render si está disponible, si no, el puerto 3000
@@ -28,35 +30,37 @@ app.use('/api/sizes/', sizesRoutes);
 app.use('/api/variants/', variantsProductRoutes);
 app.use('/api/subcategories/', subCategoryRoutes);
 app.use('/api/cart/', cartRoutes);
+app.use('/api/payment/', paymentRoutes);
+app.use('/api/webhook/', webhookRoutes);
 app.use('/api/', authRoutes); // inicio de sesion
 
 // Configuración de Stripe
-app.get('/config', (req, res) => {
-  res.send({
-    publishableKey: process.env.STRIPE_PUBLISHABLE_KEY,
-  });
-});
+// app.get('/config', (req, res) => {
+//   res.send({
+//     publishableKey: process.env.STRIPE_PUBLISHABLE_KEY,
+//   });
+// });
 
-// Crear Payment Intent
-app.post('/create-payment-intent', async (req, res) => {
-  try {
-    const { amount } = req.body;
+// // Crear Payment Intent
+// app.post('/create-payment-intent', async (req, res) => {
+//   try {
+//     const { amount } = req.body;
 
-    // Validar el monto
-    if (!amount || amount <= 0) {
-      return res.status(400).json({ error: 'Invalid amount' });
-    }
+//     // Validar el monto
+//     if (!amount || amount <= 0) {
+//       return res.status(400).json({ error: 'Invalid amount' });
+//     }
 
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: Math.round(amount * 100), // Convertir a centavos
-      currency: 'usd',
-    });
+//     const paymentIntent = await stripe.paymentIntents.create({
+//       amount: Math.round(amount * 100), // Convertir a centavos
+//       currency: 'usd',
+//     });
 
-    res.status(200).json({ clientSecret: paymentIntent.client_secret });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+//     res.status(200).json({ clientSecret: paymentIntent.client_secret });
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// });
 
 // Iniciar el servidor
 app.listen(port, () => {
