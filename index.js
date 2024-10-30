@@ -22,6 +22,7 @@ const port = process.env.PORT || 3000;  // Usa el puerto de Render si está disp
 
 app.use(cors());
 app.use(express.json());
+app.use('/api/webhook', express.raw({ type: 'application/json' }));
 
 // Rutas de la API
 app.use('/api/users/', userRoutes);
