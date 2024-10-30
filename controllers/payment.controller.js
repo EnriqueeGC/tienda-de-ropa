@@ -6,7 +6,7 @@ const registerPayment = async (id_pedido, paymentIntent) => {
     const monto_pago = amount_received / 100;
     
     try {
-        const query = `INSERT INTO PAGOS (ID_PEDIDO, METODO_PAGO, ESTADO_PAGO, MONTO_PAGO, ID_TRANSACCION, FECHA_PAGO) VALUES (:id_pedido, :metodo_pago, :estado_pago, :monto_pago, :id_transaccion, SYSDATE)`;
+        const query = `INSERT INTO PAGO (ID_PEDIDO, METODO_PAGO, ESTADO_PAGO, MONTO_PAGO, ID_TRANSACCION, FECHA_PAGO) VALUES (:id_pedido, :metodo_pago, :estado_pago, :monto_pago, :id_transaccion, SYSDATE)`;
         const params = {
             id_pedido,
             metodo_pago: 'Stripe',
