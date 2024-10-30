@@ -1,29 +1,22 @@
 const db = require('../config/db.js');
 
-const createOrder = async (req, res) => {
-    const { id_usuario, id_producto, fecha_pedido, estado_pedido, total_pago, id_ruta } = req.body;
-
+const createPedido = async (req, res) => {
+    const { id_usuario, total_pago } = req.body;
     try {
-        const query = ``;
-        const id_pedido = { type: db.oracledb.NUMBER, dir: db.oracledb.BIND_OUT };
-
-        const params = { id_usuario, id_producto, cantidad, total, id_orden };
+        const query = `INSERT INTO PEDIDO (id_usuario, fecha_pedido, estado_pedido, total_pago) VALUES (:id_usuario, SYSDATE, 'Pendiente', :total_pago) RETURNING id_pedido INTO :id_pedido`;
+        const params = {
+            id_usuario,
+            total_pago,
+            id_pedido: { type: db.NUMBER, dir: db.BIND_OUT }
+        };
         const result = await db.executeQuery(query, params);
-
-        if (result.outBinds && result.outBinds.id_orden) {
-            const newId = result.outBinds.id_orden[0];
-            res.status(201).json({
-                message: 'Orden ingresada exitosamente',
-                id: newId,
-                id_usuario,
-                id_producto,
-                cantidad,
-                total
-            });
-        }
-    } catch (err) {
-        console.error('Error al ingresar la orden', err);
-        res.status(500).json({error: 'Error al ingresar la orden'});
+    
+        const id_pedido = result.outBinds.id_pedido[0];
+      res.status(201).json({ id_pedido });
+    } catch (error) {
+      console.error("Error creating pedido:", error);
+      res.status(500).json({ error: "Error creating pedido" });
     }
-}
-
+  };
+  
+  module.exports = { createPedido };
