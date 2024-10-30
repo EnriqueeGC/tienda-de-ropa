@@ -1,4 +1,5 @@
 const db = require('../config/db.js');
+const { get } = require('../routes/order.routes.js');
 
 // Agregar un producto al carrito
 const addToCart = async (req, res) => {
@@ -143,10 +144,34 @@ const deleteCart = async (req, res) => {
     }
 };
 
+// Obtener los productos más vendidos
+const getMostSoldProducts = async (req, res) => {
+    try {
+        const query = `
+            SELECT 
+                dc.id_producto, 
+                p.nombre_producto, 
+                SUM(dc.cantidad) AS total_vendido
+            FROM Detallescarrito dc
+            JOIN PRODUCTO p ON dc.id_producto = p.id_producto
+            GROUP BY dc.id_producto, p.nombre_producto
+            ORDER BY total_vendido DESC
+            FETCH FIRST 10 ROWS ONLY`; // Limitar a los 10 productos más vendidos
+
+        const result = await db.executeQuery(query);
+
+        res.status(200).json({ productosMasVendidos: result.rows });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Error al obtener los productos más vendidos." });
+    }
+};
+
 module.exports = {
     addToCart,
     getCartDetails,
     updateCartItem,
     deleteCartItem,
+    getMostSoldProducts,
     deleteCart
 };

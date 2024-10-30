@@ -47,5 +47,51 @@ const createOrder = async (req, res) => {
         res.status(500).json({error: "Error creating order"});
     }
 }
-  
-  module.exports = { createPedido, createOrder };
+
+const getOrderDetails = async (req, res) => {
+  const { id_usuario, id_pedido } = req.params;
+
+  try {
+      // Consultar el pedido específico para el usuario
+      const orderQuery = `SELECT id_pedido, fecha_pedido, estado_pedido, total_pago 
+                          FROM PEDIDO 
+                          WHERE id_usuario = :id_usuario AND id_pedido = :id_pedido`;
+      const orderParams = { id_usuario, id_pedido };
+      const orderResult = await db.executeQuery(orderQuery, orderParams);
+
+      if (orderResult.rows.length === 0) {
+          return res.status(404).json({ error: "Pedido no encontrado" });
+      }
+
+      const pedido = orderResult.rows[0];
+
+      // Consultar los detalles del pedido
+      const detailsQuery = `SELECT dp.id_producto, dp.cantidad, dp.precio_unitario, p.nombre_producto 
+                            FROM DETALLEPEDIDO dp 
+                            JOIN PRODUCTO p ON dp.id_producto = p.id_producto 
+                            WHERE dp.id_pedido = :id_pedido`;
+      const detailsParams = { id_pedido };
+      const detailsResult = await db.executeQuery(detailsQuery, detailsParams);
+
+      const detallesPedido = detailsResult.rows.map(row => ({
+          id_producto: row.ID_PRODUCTO,
+          nombre_producto: row.NOMBRE_PRODUCTO,
+          cantidad: row.CANTIDAD,
+          precio_unitario: row.PRECIO_UNITARIO
+      }));
+
+      res.status(200).json({
+          id_pedido: pedido.ID_PEDIDO,
+          fecha_pedido: pedido.FECHA_PEDIDO,
+          estado_pedido: pedido.ESTADO_PEDIDO,
+          total_pago: pedido.TOTAL_PAGO,
+          detalles: detallesPedido
+      });
+  } catch (error) {
+      console.error("Error retrieving order details:", error);
+      res.status(500).json({ error: "Error retrieving order details" });
+  }
+};
+
+
+module.exports = { createPedido, createOrder, getOrderDetails };
