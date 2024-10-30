@@ -122,9 +122,31 @@ const deleteCartItem = async (req, res) => {
 };
 
 
+// eliminar carrito y detalles carrito una vez finalizada la comnpra
+const deleteCart = async (req, res) => {
+    const { id_usuario } = req.params;  // Cambiado a req.params para capturar desde la URL
+
+    try {
+        // Eliminar los detalles del carrito del usuario
+        const query = `DELETE FROM Detallescarrito WHERE id_carrito IN (SELECT ID_CARRITO FROM carrito WHERE USUARIOID = :id_usuario)`;
+        const params = { id_usuario };
+        await db.executeQuery(query, params);
+
+        // Eliminar el carrito del usuario
+        const query2 = `DELETE FROM carrito WHERE USUARIOID = :id_usuario`;
+        await db.executeQuery(query2, params);
+
+        res.status(200).json({ message: "Carrito eliminado correctamente." });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Error al eliminar el carrito." });
+    }
+};
+
 module.exports = {
     addToCart,
     getCartDetails,
     updateCartItem,
-    deleteCartItem
+    deleteCartItem,
+    deleteCart
 };
