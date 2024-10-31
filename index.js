@@ -37,6 +37,7 @@ app.use('/api/payment/', paymentRoutes); // incluye el endpoint de creacion de p
 app.use('/api/webhook/', webhookRoutes);
 app.use('/api/order/', orderRoutes);
 app.use('/api/orderDetails/', orderDetailsRoutes);
+app.use('/api/mostSoldProducts/', cartRoutes);
 app.use('/api/', authRoutes); // inicio de sesion
 
 // Iniciar el servidor

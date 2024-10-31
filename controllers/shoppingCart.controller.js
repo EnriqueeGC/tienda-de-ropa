@@ -149,12 +149,12 @@ const getMostSoldProducts = async (req, res) => {
     try {
         const query = `
             SELECT 
-                dc.id_producto, 
+                dp.id_producto, 
                 p.nombre_producto, 
-                SUM(dc.cantidad) AS total_vendido
-            FROM Detallescarrito dc
-            JOIN PRODUCTO p ON dc.id_producto = p.id_producto
-            GROUP BY dc.id_producto, p.nombre_producto
+                SUM(dp.cantidad) AS total_vendido
+            FROM detalle_pedido dp
+            JOIN PRODUCTO p ON dp.id_producto = p.id_producto
+            GROUP BY dp.id_producto, p.nombre_producto
             ORDER BY total_vendido DESC
             FETCH FIRST 10 ROWS ONLY`; // Limitar a los 10 productos más vendidos
 
