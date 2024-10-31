@@ -34,9 +34,9 @@ const createOrder = async (req, res) => {
         const id_pedido = result.outBinds.id_pedido[0];
 
         for (const detalle of detalles) {
-            const {id_producto, cantidad, precio_unitario} = detalle;
-            const query = `INSERT INTO DETALLEPEDIDO (id_pedido, id_producto, cantidad, precio_unitario) VALUES (:id_pedido, :id_producto, :cantidad, :precio_unitario)`;
-            const params = {id_pedido, id_producto, cantidad, precio_unitario};
+            const {id_producto, cantidad, precio_unitario, id_variante} = detalle;
+            const query = `INSERT INTO DETALLEPEDIDO (id_pedido, id_producto, cantidad, precio_unitario, id_variante) VALUES (:id_pedido, :id_producto, :cantidad, :precio_unitario, :id_variante)`;
+            const params = {id_pedido, id_producto, cantidad, precio_unitario, id_variante};
             await db.executeQuery(query, params);
         }
 
