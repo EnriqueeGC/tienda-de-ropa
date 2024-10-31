@@ -152,7 +152,7 @@ const getMostSoldProducts = async (req, res) => {
                 dp.id_producto, 
                 p.nombre_producto, 
                 SUM(dp.cantidad) AS total_vendido
-            FROM detalle_pedido dp
+            FROM detallepedido dp
             JOIN PRODUCTO p ON dp.id_producto = p.id_producto
             GROUP BY dp.id_producto, p.nombre_producto
             ORDER BY total_vendido DESC
