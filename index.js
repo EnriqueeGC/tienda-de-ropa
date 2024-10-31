@@ -15,6 +15,7 @@ const paymentRoutes = require('./routes/payment.routes.js');
 const webhookRoutes = require('./routes/webhook.routes.js'); 
 const orderRoutes = require('./routes/order.routes.js');
 const orderDetailsRoutes = require('./routes/orderDetails.routes.js');
+const facturaRoutes = require('./routes/factura.routes.js');
 
 const app = express();
 const port = process.env.PORT || 3000;  // Usa el puerto de Render si está disponible, si no, el puerto 3000
@@ -38,6 +39,7 @@ app.use('/api/webhook/', webhookRoutes);
 app.use('/api/order/', orderRoutes);
 app.use('/api/orderDetails/', orderDetailsRoutes);
 app.use('/api/mostSoldProducts/', cartRoutes);
+app.use('/api/factura/', facturaRoutes);
 app.use('/api/', authRoutes); // inicio de sesion
 
 // Iniciar el servidor
