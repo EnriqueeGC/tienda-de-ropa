@@ -93,5 +93,43 @@ const getOrderDetails = async (req, res) => {
   }
 };
 
+// Controlador para obtener todos los pedidos y sus detalles por el id del usuario
+const getPedidosByUsuario = async (req, res) => {
+    const { id_usuario } = req.params;
 
-module.exports = { createPedido, createOrder, getOrderDetails };
+    const query = `
+       SELECT 
+    p.id_pedido,
+    p.fecha_pedido,
+    p.estado_pedido,
+    p.total_pago,
+    dp.id_detalle_pedido,
+    dp.id_producto,
+    dp.cantidad,
+    dp.precio_unitario,
+    dp.id_variante,
+    pr.nombre_producto,
+    pr.url_imagen
+FROM 
+    PEDIDO p
+INNER JOIN 
+    DETALLEPEDIDO dp ON p.id_pedido = dp.id_pedido
+INNER JOIN 
+    PRODUCTO pr ON dp.id_producto = pr.id_producto
+WHERE 
+    p.id_usuario = :id_usuario
+
+
+    `;
+    const params = { id_usuario };
+    try {
+        const pedidos = await db.executeQuery(query, params);
+        res.status(200).json({ result: pedidos.rows });
+    } catch (error) {
+        console.error("Error al obtener los pedidos:", error);
+        res.status(500).json({ success: false, message: "Error al obtener los pedidos" });
+    }
+};
+
+
+module.exports = { createPedido, createOrder, getOrderDetails, getPedidosByUsuario };
