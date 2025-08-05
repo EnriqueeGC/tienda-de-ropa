@@ -2,20 +2,20 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 
-const userRoutes = require('./routes/user.routes.js');
-const categoryRoutes = require('./routes/category.routes.js');
-const productRoutes = require('./routes/product.routes.js');
-const discountRoutes = require('./routes/discount.routes.js');
-const authRoutes = require('./routes/auth.routes.js');
-const sizesRoutes = require('./routes/sizes.routes.js');
-const variantsProductRoutes = require('./routes/variantsProduct.routes.js');
-const subCategoryRoutes = require('./routes/subCategory.routes.js');
-const cartRoutes = require('./routes/shoppingCart.routes.js');
-const paymentRoutes = require('./routes/payment.routes.js');
-const webhookRoutes = require('./routes/webhook.routes.js'); 
-const orderRoutes = require('./routes/order.routes.js');
-const orderDetailsRoutes = require('./routes/orderDetails.routes.js');
-const facturaRoutes = require('./routes/factura.routes.js');
+const userRoutes = require('./app/routes/user.routes.js');
+const categoryRoutes = require('./app/routes/category.routes.js');
+const productRoutes = require('./app/routes/product.routes.js');
+const discountRoutes = require('./app/routes/discount.routes.js');
+const authRoutes = require('./app/routes/auth.routes.js');
+const sizesRoutes = require('./app/routes/sizes.routes.js');
+const variantsProductRoutes = require('./app/routes/variantsProduct.routes.js');
+const subCategoryRoutes = require('./app/routes/subCategory.routes.js');
+const cartRoutes = require('./app/routes/shoppingCart.routes.js');
+const paymentRoutes = require('./app/routes/payment.routes.js');
+const webhookRoutes = require('./app/routes/webhook.routes.js'); 
+const orderRoutes = require('./app/routes/order.routes.js');
+const orderDetailsRoutes = require('./app/routes/orderDetails.routes.js');
+const facturaRoutes = require('./app/routes/factura.routes.js');
 
 const app = express();
 const port = process.env.PORT || 3000;  // Usa el puerto de Render si está disponible, si no, el puerto 3000
