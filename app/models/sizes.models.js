@@ -1,6 +1,6 @@
 module.exports = (sequelize, Sequelize) => {
   const Sizes = sequelize.define("Sizes", {
-    id_size: {
+    sizeId: {
       type: Sequelize.INTEGER,
       primaryKey: true,
       autoIncrement: true,
@@ -10,7 +10,7 @@ module.exports = (sequelize, Sequelize) => {
       allowNull: false,
       unique: true,
     },
-    kind_of_size: {
+    kindOfSize: {
       type: Sequelize.STRING,
       allowNull: false,
     },

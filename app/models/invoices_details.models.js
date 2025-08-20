@@ -1,19 +1,19 @@
 module.exports = (sequelize, Sequelize) => {
   const InvoicesDetails = sequelize.define("InvoicesDetails", {
-    id_invoice_detail: {
+    invoiceDetailId: {
       type: Sequelize.INTEGER,
       primaryKey: true,
       autoIncrement: true,
     },
-    id_invoice: {
+    invoiceId: {
       type: Sequelize.INTEGER,
       allowNull: false,
     },
-    id_product_variant: {
+    productVariantId: {
       type: Sequelize.INTEGER,
       allowNull: false,
     },
-    product_name: {
+    productName: {
       type: Sequelize.STRING,
       allowNull: false,
     },
@@ -21,11 +21,11 @@ module.exports = (sequelize, Sequelize) => {
       type: Sequelize.INTEGER,
       allowNull: false,
     },
-    price_per_unit: {
+    pricePerUnit: {
       type: Sequelize.DECIMAL(10, 2),
       allowNull: false,
     },
-    total_price: {
+    totalPrice: {
       type: Sequelize.DECIMAL(10, 2),
       allowNull: false,
     },
@@ -33,7 +33,7 @@ module.exports = (sequelize, Sequelize) => {
 
   InvoicesDetails.associate = (models) => {
     InvoicesDetails.belongsTo(models.Invoices, {
-      foreignKey: "id_invoice",
+      foreignKey: "invoiceId",
       as: "invoice",
     });
   };

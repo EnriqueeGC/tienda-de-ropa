@@ -1,47 +1,175 @@
-const db = require('../config/db.js');
-const bcrypt = require('bcrypt');
+const bcrypt = require("bcrypt");
+const db = require("../config/db.js");
+const User = db.User;
 
-const SECRET_KEY = 'proyectoUMG';
+exports.registerUser = async (req, res) => {
+  const {
+    firstName,
+    secondName,
+    lastName,
+    secondLastName,
+    address,
+    phone,
+    email,
+    username,
+    password,
+    role,
+  } = req.body;
 
-const registerUser = async (req, res) => {
+  const userExists = await User.findOne({ where: { email } });
+  if (userExists) {
+    return res.status(400).json({ message: "Email already in use" });
+  }
 
-}
+  const usernameExists = await User.findOne({ where: { username } });
+  if (usernameExists) {
+    return res.status(400).json({ message: "Username already in use" });
+  }
 
-const getAllUsers = async (req, res) => {
-}
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = await User.create({
+      firstName,
+      secondName,
+      lastName,
+      secondLastName,
+      address,
+      phone,
+      email,
+      username,
+      password: hashedPassword,
+      role: role || "user", // Default role is 'user' if not provided
+    });
+    res
+      .status(201)
+      .json({ message: "User registered successfully", user: newUser });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error registering user", error: error.message });
+  }
+};
 
-const getAllCustomers = async (req, res) => {
-}
+exports.findAllUsers = async (req, res) => {
+  try {
+    const users = await User.findAll({
+      where: { role: "user" },
+      attributes: { exclude: ["password"] }, // Exclude password from the response
+    });
+    res.status(200).json(users);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error retrieving users", error: error.message });
+  }
+};
 
-const getAllEmployees = async (req, res) => {
+exports.findById = async (req, res) => {
+  const userId = req.params.userId;
 
-}
+  try {
+    const user = await User.findByPk(userId, {
+      attributes: { exclude: ["password"] }, // Exclude password from the response
+    });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json(user);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error retrieving user", error: error.message });
+  }
+};
 
-const getUsersById = async (req, res) => {
+exports.findAllAdminUsers = async (req, res) => {
+  try {
+    const users = await User.findAll({
+      where: { role: "admin" },
+      attributes: { exclude: ["password"] }, // Exclude password from the response
+    });
+    res.status(200).json(users);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error retrieving admin users", error: error.message });
+  }
+};
 
-}
+exports.updateUser = async (req, res) => {
+  const userId = req.params.userId;
+  const {
+    firstName,
+    secondName,
+    lastName,
+    secondLastName,
+    address,
+    phone,
+    email,
+    username,
+    password,
+    role,
+  } = req.body;
 
-const getUsersByName = async (req, res) => {
-}
+  try {
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
-const getUserBySecondName = async (req, res) => {
-}
+    if (email && email !== user.email) {
+      const emailExists = await User.findOne({ where: { email } });
+      if (emailExists) {
+        return res.status(400).json({ message: "Email already in use" });
+      }
+    }
 
-const deleteUserById = async (req, res) => {
+    if (username && username !== user.username) {
+      const usernameExists = await User.findOne({ where: { username } });
+      if (usernameExists) {
+        return res.status(400).json({ message: "Username already in use" });
+      }
+    }
 
-}
+    const updatedData = {
+      firstName,
+      secondName,
+      lastName,
+      secondLastName,
+      address,
+      phone,
+      email,
+      username,
+      role: role || user.role, // Keep existing role if not provided
+    };
 
-const updateUser = async (req, res) => {
-}
+    if (password) {
+      updatedData.password = await bcrypt.hash(password, 10);
+    }
 
-module.exports = {
-    registerUser,
-    getAllUsers,
-    getAllCustomers,
-    getAllEmployees,
-    getUsersById,
-    getUsersByName,
-    getUserBySecondName,
-    deleteUserById,
-    updateUser
-}
+    await user.update(updatedData);
+    res.status(200).json({ message: "User updated successfully", user });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error updating user", error: error.message });
+  }
+};
+
+exports.deleteUser = async (req, res) => {
+  const userId = req.params.userId;
+
+  try {
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    await user.destroy();
+    res.status(200).json({ message: "User deleted successfully" });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error deleting user", error: error.message });
+  }
+};

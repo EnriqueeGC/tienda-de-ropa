@@ -1,24 +1,24 @@
 module.exports = (sequelize, Sequelize) => {
   const CartItems = sequelize.define("CartItems", {
-    id_cart_item: {
+    cartItemId: {
       type: Sequelize.INTEGER,
       primaryKey: true,
       autoIncrement: true,
     },
-    id_cart: {
+    cartId: {
       type: Sequelize.INTEGER,
       allowNull: false,
       references: {
         model: "ShoppingCarts", // Assuming the table name is 'ShoppingCarts'
-        key: "id_cart",
+        key: "cartId",
       },
     },
-    id_product: {
+    productId: {
       type: Sequelize.INTEGER,
       allowNull: false,
       references: {
         model: "Products", // Assuming the table name is 'Products'
-        key: "id_product",
+        key: "productId",
       },
     },
     quantity: {
@@ -42,11 +42,11 @@ module.exports = (sequelize, Sequelize) => {
 
   CartItems.associate = (models) => {
     CartItems.belongsTo(models.ShoppingCarts, {
-      foreignKey: "id_cart",
+      foreignKey: "cartId",
       as: "cart",
     });
     CartItems.belongsTo(models.Products, {
-      foreignKey: "id_product",
+      foreignKey: "productId",
       as: "product",
     });
   };

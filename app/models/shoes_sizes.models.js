@@ -1,6 +1,6 @@
 module.exports = (sequelize, Sequelize) => {
   const ShoeSizes = sequelize.define("shoe_sizes", {
-    id_shoe_size: {
+    shoeSizeId: {
       type: Sequelize.INTEGER,
       primaryKey: true,
       autoIncrement: true,

@@ -1,32 +1,32 @@
-module.exports = (sequelize, sequelize) => {
+module.exports = (sequelize, Sequelize) => {
   const Subcategory = sequelize.define('Subcategory', {
-    id_subcategory: {
-      type: sequelize.INTEGER, 
-      primarykey: true,
+    subcategoryId: {
+      type: Sequelize.INTEGER, 
+      primaryKey: true,
       autoIncrement: true
     },
     name: {
-      type: sequelize.STRING,
+      type: Sequelize.STRING,
       allowNull: false, 
       unique: true
     },
     description: {
-      type: sequelize.TEXT,
+      type: Sequelize.TEXT,
       allowNull: true,
     },
-    id_category: {
-      type: sequelize.INTEGER,
-      allowNull: false, 
+    categoryId: {
+      type: Sequelize.INTEGER,
+      allowNull: false,
       references: {
         model: 'Categories', // Assuming the table name is 'Categories'
-        key: 'id_category'
+        key: 'categoryId'
       }
     }
   });
 
   Subcategory.associate = (models) => {
     Subcategory.belongsTo(models.Category, {
-      foreignKey: 'id_category',
+      foreignKey: 'categoryId',
       as: 'category'
     });
   };

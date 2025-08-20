@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const db = require('./app/config/db.js');
 
 const userRoutes = require('./app/routes/user.routes.js');
 const categoryRoutes = require('./app/routes/category.routes.js');
@@ -21,6 +22,12 @@ const app = express();
 const port = process.env.PORT || 3000;  // Usa el puerto de Render si está disponible, si no, el puerto 3000
 
 app.use(cors());
+
+db.sequelize.sync({ force: true }).then(() => {
+  console.log('Base de datos sincronizada');
+}).catch((error) => {
+  console.error('Error al sincronizar la base de datos:', error);
+});
 
 app.use('/api/webhook', express.raw({ type: 'application/json' }));
 app.use(express.json());

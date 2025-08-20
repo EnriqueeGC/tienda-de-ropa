@@ -4,14 +4,11 @@ const userMiddleware = require('../middlewares/user.middleware.js');
 
 const router = express.Router();
 
-router.post('/register', userMiddleware.validateUser, userMiddleware.validateResults, userController.registerUser);
-router.get('/getAll', userController.getAllUsers);
-router.get('/getAllCustomers', userController.getAllCustomers);
-router.get('/getAllEmployees', userController.getAllEmployees);
-router.get('/getUserById/:usuarioId', userController.getUsersById);
-router.get('/getUserByName', userController.getUsersByName); // /getByName?nombre=ejemplo
-router.get('/getUserBySecondName', userController.getUserBySecondName); // /getByEmail?correoElectronico=ejemplo
-router.delete('/deleteUserById/:usuarioId', userController.deleteUserById);
-router.put('/updateUserById/:usuarioID', userMiddleware.validateUser, userMiddleware.validateResults, userController.updateUser);
+router.post('/register',  userController.registerUser);
+router.get('/findAll', userController.findAllUsers);
+router.get('/findById/:userId', userController.findById);
+router.get('/findAllAdminUsers', userController.findAllAdminUsers);
+router.put('/update/:userId', userController.updateUser);
+router.delete('/delete/:userId', userController.deleteUser);
 
 module.exports = router;

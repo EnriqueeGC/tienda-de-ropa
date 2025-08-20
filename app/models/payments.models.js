@@ -1,6 +1,6 @@
 module.exports = (Sequelize, Sequelize) => {
   const Payments = Sequelize.define("Payments", {
-    id_payment: {
+    paymentId: {
       type: Sequelize.INTEGER,
       primaryKey: true,
       autoIncrement: true,
@@ -17,16 +17,16 @@ module.exports = (Sequelize, Sequelize) => {
       type: Sequelize.STRING,
       allowNull: false,
     },
-    id_order: {
+    orderId: {
       type: Sequelize.INTEGER,
       allowNull: false,
     },
-    created_at: {
+    createdAt: {
       type: Sequelize.DATE,
       allowNull: false,
       defaultValue: Sequelize.NOW,
     },
-    updated_at: {
+    updatedAt: {
       type: Sequelize.DATE,
       allowNull: false,
       defaultValue: Sequelize.NOW,
@@ -35,7 +35,7 @@ module.exports = (Sequelize, Sequelize) => {
 
   Payments.associate = (models) => {
     Payments.belongsTo(models.Orders, {
-      foreignKey: "id_order",
+      foreignKey: "orderId",
       as: "order",
     });
   };

@@ -1,6 +1,6 @@
 module.exports = (sequelize, Sequelize) => {
   const Genders = sequelize.define("Genders", {
-    id_gender: {
+    genderId: {
       type: sequelize.INTEGER,
       primaryKey: true,
       autoIncrement: true,

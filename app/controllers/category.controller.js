@@ -1,148 +1,107 @@
-const db = require('../config/db.js');
+const e = require("cors");
+const db = require("../config/db.js");
+const Category = db.Category;
 
-const createCategory = async (req, res) => {
-    const { nombre_categoria } = req.body;
+exports.createCategory = async (req, res) => {
+  const { name, description } = req.body;
 
-    try {
-        const query = `INSERT INTO CATEGORIA (NOMBRE_CATEGORIA) VALUES (:nombre_categoria) RETURNING ID_CATEGORIA INTO :id_categoria`;
-        const id_categoria = { type: db.oracledb.NUMBER, dir: db.oracledb.BIND_OUT };
-        const params = {
-            nombre_categoria,
-            id_categoria
-        };
+  const existingCategory = await Category.findOne({ where: { name } });
+  if (existingCategory) {
+    return res.status(400).json({ message: "Category already exists" });
+  }
 
-        const result = await db.executeQuery(query, params);
-
-        if (result.outBinds && result.outBinds.id_categoria) {
-            const newId = result.outBinds.id_categoria[0];
-            res.status(201).json({
-                message: 'Categoría ingresada exitosamente',
-                id: newId,
-                nombre_categoria
-            });
-        } else {
-            throw new Error('No se pudo obtener el ID de la categoría recién creada.');
-        }
-    } catch (error) {
-        console.error(`Error al crear categoría: ${error}`);
-        res.status(500).json({ error: 'Error al crear una nueva categoría' });
-    }
+  try {
+    const newCategory = await Category.create({
+      name,
+      description,
+    });
+    res.status(201).json({
+      message: "Category created successfully",
+      category: newCategory,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error creating category",
+      error: error.message,
+    });
+  }
 };
 
-const getAll = async (req, res) => {
-    try {
-        const query = `SELECT * FROM CATEGORIA`;
-        const result = await db.executeQuery(query);
+exports.findAllCategories = async (req, res) => {
+  try {
+    const categories = await Category.findAll();
+    res.status(200).json({
+      message: "Categories retrieved successfully",
+      categories,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error retrieving categories",
+      error: error.message,
+    });
+  }
+};
 
-        if (result.rows && result.rows.length > 0) {
-            res.status(200).json(result.rows);
-        } else {
-            throw new Error('No se encontraron categorías');
-        }
-        
-    } catch (error) {
-        console.error(`Error al obtener categorías: ${error}`);
-        res.status(500).json({ error: 'Error al obtener categorías' });
+exports.findCategoryById = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const category = await Category.findByPk(id);
+    res.status(200).json({
+      message: "Category retrieved successfully",
+      category,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error retrieving category",
+      error: error.message,
+    });
+  }
+};
+
+exports.updateCategory = async (req, res) => {
+  const { id } = req.params;
+  const { name, description } = req.body;
+
+  try {
+    const category = await Category.findByPk(id);
+    if (!category) {
+      return res.status(404).json({ message: "Category not found" });
     }
-}
 
-const getCategoryById = async (req, res) => {
-    const { id } = req.params;
+    category.name = name || category.name;
+    category.description = description || category.description;
 
-    try {
-        const query = `SELECT * FROM CATEGORIA WHERE ID_CATEGORIA = :id`;
-        const params = { id };
-        const result = await db.executeQuery(query, params);
+    await category.save();
+    res.status(200).json({
+      message: "Category updated successfully",
+      category,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error updating category",
+      error: error.message,
+    });
+  }
+};
 
-        if (result.rows && result.rows.length > 0) {
-            res.status(200).json(result.rows);
-        } else {
-            throw new Error('No se encontró la categoría');
-        }
-    } catch (error) {
-        console.error(`Error al obtener categoría: ${error}`);
-        res.status(500).json({ error: 'Error al obtener categoría' });
-    }
-}
+exports.deleteCategory = async (req, res) => {
+  const { id } = req.params;
 
-const getCategoryByName = async (req, res) => {
-    const { nombre_categoria } = req.query;
-
-    if (!nombre_categoria) {
-        return res.status(400).json({ error: 'El parámetro nombre_categoria es requerido' });
+  try {
+    const category = await Category.findByPk(id);
+    if (!category) {
+      return res.status(404).json({ message: "Category not found" });
     }
 
-    try {
-        const query = `SELECT * FROM CATEGORIA 
-                        WHERE LOWER(NOMBRE_CATEGORIA) LIKE LOWER(:nombre_categoria)
-                        OR SOUNDEX(NOMBRE_CATEGORIA) = SOUNDEX(:nombre_categoria)`;
-        const params = { nombre_categoria: `%${nombre_categoria}%`}
-        const result = await db.executeQuery(query, params);
-
-        if (result.rows && result.rows.length > 0) {
-            res.status(200).json(result.rows);
-        } else {
-            throw new Error('No se encontró la categoría');
-        }
-    } catch (error) {
-        console.error(`Error al obtener categoría: ${error}`);
-        res.status(500).json({ error: 'Error al obtener categoría' });
-    }
-}
-
-const updateCategory = async (req, res) => {
-    const { id } = req.params;
-    const { nombre_categoria } = req.body;
-
-    try {
-        const query = `UPDATE CATEGORIA SET NOMBRE_CATEGORIA = :nombre_categoria WHERE ID_CATEGORIA = :id`;
-        const params = {
-            nombre_categoria,
-            id
-        };
-        const result = await db.executeQuery(query, params);
-
-        if (result.rowsAffected && result.rowsAffected > 0) {
-            res.status(200).json({
-                message: 'Categoría actualizada exitosamente',
-                id,
-                nombre_categoria
-            });
-        } else {
-            throw new Error('No se pudo actualizar la categoría');
-        }
-    } catch (error) {
-        console.error(`Error al actualizar categoría: ${error}`);
-        res.status(500).json({ error: 'Error al actualizar categoría' });
-    }
-}
-
-const deleteCategory = async (req, res) => {
-    const { id } = req.params;
-
-    try {
-        const query = `DELETE FROM CATEGORIA WHERE ID_CATEGORIA = :id`;
-        const params = { id };
-        const result = await db.executeQuery(query, params);
-
-        if (result.rowsAffected && result.rowsAffected > 0) {
-            res.status(200).json({
-                message: 'Categoría eliminada exitosamente',
-                id
-            });
-        } else {
-            throw new Error('No se pudo eliminar la categoría');
-        }
-    } catch (error) {
-        console.error(`Error al eliminar categoría: ${error}`);
-        res.status(500).json({ error: 'Error al eliminar categoría' });
-    }
-}
-
-module.exports = {
-    createCategory,
-    getAll,
-    getCategoryById,
-    updateCategory,
-    deleteCategory
-}
+    await category.destroy();
+    res.status(200).json({
+      message: "Category deleted successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error deleting category",
+      error: error.message,
+    });
+  }
+};

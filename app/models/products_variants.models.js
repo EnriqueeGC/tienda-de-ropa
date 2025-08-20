@@ -2,36 +2,36 @@ const { size } = require("pdfkit/js/page");
 
 module.exports = (sequelize, Sequelize) => {
   const ProductsVariants = sequelize.define("ProductsVariants", {
-    id_product_variant: {
+    productVariantId: {
       type: Sequelize.INTEGER,
       primaryKey: true,
       autoIncrement: true,
     },
-    id_product: {
+    productId: {
       type: Sequelize.INTEGER,
       allowNull: false,
       references: {
         model: "Products", // Assuming the table name is 'Products'
-        key: "id_product",
+        key: "productId",
       },
     },
-    id_size: {
+    sizeId: {
       type: Sequelize.INTEGER,
       allowNull: false,
       references: {
         model: "Sizes", // Assuming the table name is 'Sizes'
-        key: "id_size",
+        key: "sizeId",
       },
     },
-    id_color: {
+    colorId: {
       type: Sequelize.INTEGER,
       allowNull: false,
       references: {
         model: "Colors", // Assuming the table name is 'Colors'
-        key: "id_color",
+        key: "colorId",
       },
     },
-    id_gender: {
+    genderId: {
       type: Sequelize.INTEGER,
       allowNull: false,
       references: {
@@ -45,33 +45,33 @@ module.exports = (sequelize, Sequelize) => {
       allowNull: false,
       unique: true,
     },
-    stock_quantity: {
+    stockQuantity: {
       type: Sequelize.INTEGER,
       allowNull: false,
     },
-    url_image: {
+    urlImage: {
       type: Sequelize.STRING,
       allowNull: true,
     },
     indexes: [
       {
         unique: true,
-        fields: ["id_product", "id_size", "id_color"],
+        fields: ["productId", "sizeId", "colorId"],
       },
     ],
   });
 
   ProductsVariants.associate = (models) => {
     ProductsVariants.belongsTo(models.Products, {
-      foreignKey: "id_product",
+      foreignKey: "productId",
       as: "product",
     });
     ProductsVariants.belongsTo(models.Sizes, {
-      foreignKey: "id_size",
+      foreignKey: "sizeId",
       as: "size",
     });
     ProductsVariants.belongsTo(models.Colors, {
-      foreignKey: "id_color",
+      foreignKey: "colorId",
       as: "color",
     });
   };

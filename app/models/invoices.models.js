@@ -2,29 +2,29 @@ const { or } = require("sequelize");
 
 module.exports = (sequelize, Sequelize) => {
   const Invoices = sequelize.define("Invoices", {
-    id_invoice: {
+    invoiceId: {
       type: Sequelize.INTEGER,
       primaryKey: true,
       autoIncrement: true,
     },
-    invoice_number: {
+    invoiceNumber: {
       type: Sequelize.STRING,
       allowNull: false,
       unique: true,
     },
-    id_order: {
+    orderId: {
       type: Sequelize.INTEGER,
       allowNull: false,
     },
-    id_payment: {
+    paymentId: {
       type: Sequelize.INTEGER,
       allowNull: false,
     },
-    id_user: {
+    userId: {
       type: Sequelize.INTEGER,
       allowNull: false,
     },
-    total_amount: {
+    totalAmount: {
       type: Sequelize.DECIMAL(10, 2),
       allowNull: false,
     },
@@ -32,7 +32,7 @@ module.exports = (sequelize, Sequelize) => {
       type: Sequelize.STRING,
       allowNull: false,
     },
-    invoice_date: {
+    invoiceDate: {
       type: Sequelize.DATE,
       allowNull: false,
       defaultValue: Sequelize.NOW,
@@ -41,7 +41,7 @@ module.exports = (sequelize, Sequelize) => {
 
   Invoices.associate = (models) => {
     Invoices.belongsTo(models.Orders, {
-      foreignKey: "id_order",
+      foreignKey: "orderId",
       as: "order",
     });
   };
