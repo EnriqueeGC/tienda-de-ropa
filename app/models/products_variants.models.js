@@ -1,5 +1,3 @@
-const { size } = require("pdfkit/js/page");
-
 module.exports = (sequelize, Sequelize) => {
   const ProductsVariants = sequelize.define("ProductsVariants", {
     productVariantId: {
@@ -11,7 +9,7 @@ module.exports = (sequelize, Sequelize) => {
       type: Sequelize.INTEGER,
       allowNull: false,
       references: {
-        model: "Products", // Assuming the table name is 'Products'
+        model: "Products",
         key: "productId",
       },
     },
@@ -19,7 +17,7 @@ module.exports = (sequelize, Sequelize) => {
       type: Sequelize.INTEGER,
       allowNull: false,
       references: {
-        model: "Sizes", // Assuming the table name is 'Sizes'
+        model: "Sizes",
         key: "sizeId",
       },
     },
@@ -27,7 +25,7 @@ module.exports = (sequelize, Sequelize) => {
       type: Sequelize.INTEGER,
       allowNull: false,
       references: {
-        model: "Colors", // Assuming the table name is 'Colors'
+        model: "Colors",
         key: "colorId",
       },
     },
@@ -36,11 +34,10 @@ module.exports = (sequelize, Sequelize) => {
       allowNull: false,
       references: {
         model: "Genders",
-        key: "id_gender",
+        key: "genderId",
       },
     },
     sku: {
-      // Stock Keeping Unit
       type: Sequelize.STRING,
       allowNull: false,
       unique: true,
@@ -53,6 +50,8 @@ module.exports = (sequelize, Sequelize) => {
       type: Sequelize.STRING,
       allowNull: true,
     },
+  }, {
+    timestamps: true, // 👈 crea createdAt y updatedAt
     indexes: [
       {
         unique: true,

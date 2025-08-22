@@ -47,7 +47,7 @@ app.use('/api/order/', orderRoutes);
 app.use('/api/orderDetails/', orderDetailsRoutes);
 app.use('/api/mostSoldProducts/', cartRoutes);
 app.use('/api/factura/', facturaRoutes);
-app.use('/api/', authRoutes); // inicio de sesion
+app.use('/api/auth/', authRoutes); // inicio de sesion
 
 // Iniciar el servidor
 app.listen(port, () => {

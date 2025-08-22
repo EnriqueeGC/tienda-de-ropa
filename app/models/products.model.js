@@ -17,7 +17,22 @@ module.exports = (sequelize, Sequelize) => {
       type: Sequelize.DECIMAL(10, 2),
       allowNull: false,
     },
+    subcategoryId: {
+      type: Sequelize.INTEGER,
+      allowNull: false,
+      references: {
+        model: "Subcategories",
+        key: "subcategoryId",
+      },
+    },
   });
+
+  Products.associate = (models) => {
+    Products.hasMany(models.ProductsVariants, {
+      foreignKey: "productId",
+      as: "variants",
+    });
+  };
 
   return Products;
 };

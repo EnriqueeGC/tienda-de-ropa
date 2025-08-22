@@ -1,5 +1,5 @@
-module.exports = (Sequelize, Sequelize) => {
-  const Payments = Sequelize.define("Payments", {
+module.exports = (sequelize, Sequelize) => {
+  const Payments = sequelize.define("Payments", {
     paymentId: {
       type: Sequelize.INTEGER,
       primaryKey: true,

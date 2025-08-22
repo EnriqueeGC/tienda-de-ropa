@@ -1,12 +1,12 @@
 module.exports = (sequelize, Sequelize) => {
   const Genders = sequelize.define("Genders", {
     genderId: {
-      type: sequelize.INTEGER,
+      type: Sequelize.INTEGER,
       primaryKey: true,
       autoIncrement: true,
     },
     name: {
-      type: sequelize.STRING,
+      type: Sequelize.STRING,
       allowNull: false,
       unique: true,
     },
