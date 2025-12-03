@@ -40,11 +40,13 @@ db.Invoices = require("../models/invoices.models.js")(sequelize, Sequelize);
 db.InvoicesDetails = require("../models/invoicesDetails.models.js")(sequelize, Sequelize);
 
 db.Orders = require("../models/orders.models.js")(sequelize, Sequelize);
+db.OrderDetails = require("../models/orderDetails.models.js")(sequelize, Sequelize);
 
 db.Payments = require("../models/payments.models.js")(sequelize, Sequelize);
 
 db.ShoppingCart = require("../models/shoppingCarts.models.js")(sequelize, Sequelize);
 db.CartItems = require("../models/cartItems.models.js")(sequelize, Sequelize);
 
+db.Discounts = require("../models/discounts.models.js")(sequelize, Sequelize);
 
 module.exports = db;

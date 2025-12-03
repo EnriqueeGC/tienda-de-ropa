@@ -1,21 +1,20 @@
 const db = require('../config/db.js')
+const Size = db.Sizes;
 
-const getAllSizes = async (req, res) => {
+exports.getAllSizes = async (req, res) => {
     try {
-        const query = `SELECT * FROM TALLA`;
-        const result = await db.executeQuery(query);
+        const sizes = await Size.findAll();
 
-        if (result.rows.length === 0) {
-            return res.status(404).json({ message: 'Tallas no encontradas' });
+        if (sizes.length === 0) {
+            return res.status(404).json({ message: 'No sizes found' });
         }
 
-        res.status(200).json(result.rows)
-    } catch (err) {
-        console.error('Error al obtener todas las tallas', err);
-        res.status(500).json({ error: 'Error al obtener todas las tallas' });
-    }   
-}
-
-module.exports = {
-    getAllSizes
-}
+        res.status(200).json({
+            message: 'Sizes retrieved successfully',
+            sizes: sizes
+        });
+    } catch (error) {
+        console.error('Error retrieving sizes:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};

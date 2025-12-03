@@ -3,6 +3,8 @@ const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const axios = require('axios');
 
+const logoUrl = 'https://res.cloudinary.com/dy3j25cis/image/upload/v1730358883/t46lsrv5fd0phfsbafou.png';
+
 const createFacturaPDF = async (req, res) => {
     const { id_pedido } = req.params;
     try {

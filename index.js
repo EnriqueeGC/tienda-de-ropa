@@ -16,7 +16,7 @@ const paymentRoutes = require('./app/routes/payment.routes.js');
 const webhookRoutes = require('./app/routes/webhook.routes.js'); 
 const orderRoutes = require('./app/routes/order.routes.js');
 const orderDetailsRoutes = require('./app/routes/orderDetails.routes.js');
-const facturaRoutes = require('./app/routes/factura.routes.js');
+const facturaRoutes = require('./app/routes/invoice.routes.js');
 
 const app = express();
 const port = process.env.PORT || 3000;  // Usa el puerto de Render si está disponible, si no, el puerto 3000

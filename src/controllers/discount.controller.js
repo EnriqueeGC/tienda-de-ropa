@@ -1,164 +1,131 @@
-const db = require('../config/db.js');
+const db = require("../config/db.js");
+const Discounts = db.Discounts;
 
-// rout /createDiscount
-const createDiscount = async (req, res) => {
-    const { tipo_descuento, valor_descuento, fecha_inicio, fecha_fin } = req.body;
+exports.createDiscount = async (req, res) => {
+  const { discount_type, discount_value, start_date, end_date } = req.body;
 
-    try {
-        const query = `
-      INSERT INTO DESCUENTO (TIPO_DESCUENTO, VALOR_DESCUENTO, FECHA_INICIO, FECHA_FIN)
-      VALUES (:tipo_descuento, :valor_descuento, TO_DATE(:fecha_inicio, 'YYYY-MM-DD'), TO_DATE(:fecha_fin, 'YYYY-MM-DD'))
-      RETURNING ID_DESCUENTO INTO :id_descuento
-    `;
-        const id_descuento = { type: db.oracledb.NUMBER, dir: db.oracledb.BIND_OUT };
-        const params = { tipo_descuento, valor_descuento, fecha_inicio, fecha_fin, id_descuento };
-        const result = await db.executeQuery(query, params);
+  const discountValue = await Discounts.findOne({
+    where: { discount_value: discount_value },
+  });
 
-        if (result.outBinds && result.outBinds.id_descuento) {
-            const newId = result.outBinds.id_descuento[0];
-            res.status(201).json({
-                message: 'Descuento ingresado exitosamente',
-                id: newId,
-                tipo_descuento,
-                valor_descuento,
-                fecha_inicio,
-                fecha_fin
-            });
-        } else {
-            throw new Error('No se pudo obtener el ID del descuento recién creado.');
-        }
+  if (discountValue) {
+    return res.status(400).json({ message: "Discount value already exists" });
+  }
+
+  try {
+    const newDiscount = await Discounts.create({
+      discount_type,
+      discount_value,
+      start_date,
+      end_date,
+    });
+    res.status(201).json({
+      message: "Discount created successfully",
+      discount: newDiscount,
+    });
+  } catch (error) {
+    console.error(`Error creating discount: ${error}`);
+    res.status(500).json({ error: "Error creating discount" });
+  }
+};
+
+exports.findAllDiscounts = async (req, res) => {
+  try {
+    const discounts = await Discounts.findAll();
+    res.status(200).json({
+      message: "Discounts retrieved successfully",
+      discounts: discounts,
+    });
+  } catch (error) {
+    console.error(`Error retrieving discounts: ${error}`);
+    res.status(500).json({ error: "Error retrieving discounts" });
+  }
+};
+
+exports.findById = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const discount = await Discounts.findByPk(id);
+    if (discount) {
+      res.status(200).json({
+        message: "Discount retrieved successfully",
+        discount: discount,
+      });
+    } else {
+      res.status(404).json({ message: `Discount not found with id: ${id}` });
+    }
+  } catch (error) {
+    console.error(`Error retrieving discount by ID: ${error}`);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+exports.findByType = async (req, res) => {
+  const { discount_type } = req.query;
+  
+  if (!discount_type) {
+    return res.status(400).json({ error: "The discount_type parameter is required" });
+  }
+    try {   
+    const discounts = await Discounts.findAll({
+        where: {
+            discount_type: discount_type,
+        },
+        });
+    if (discounts.length === 0) {
+        return res.status(404).json({ message: "No discounts found" });
+    }
+    res.status(200).json({
+        message: "Discounts retrieved successfully",
+        discounts: discounts,
+    });
     } catch (error) {
-        console.error(`Error al crear descuento: ${error}`);
-        res.status(500).json({ error: 'Error al crear un nuevo descuento' });
+        console.error(`Error retrieving discounts by type: ${error}`);
+        res.status(500).json({ message: "Error retrieving discounts" });
     }
-}
+};
 
-const getAllDiscounts = async (req, res) => {
-    try {
-        const query = `SELECT * FROM DESCUENTO`;
-        const result = await db.executeQuery(query);
+exports.updateDiscount = async (req, res) => {
+  const { id } = req.params;
+  const { discount_type, discount_value, start_date, end_date } = req.body;
 
-        if (result.rows && result.rows.length > 0) {
-            res.status(200).json(result.rows);
-        } else {
-            throw new Error('No se encontraron descuentos');
-        }
-        
-    } catch (error) {
-        console.error(`Error al obtener descuentos: ${error}`);
-        res.status(500).json({ error: 'Error al obtener descuentos' });
-    }
-}
-
-const getDiscountById = async (req, res) => {
-    const { id_descuento } = req.params;
-
-    try {
-        const query = `SELECT * FROM DESCUENTO WHERE ID_DESCUENTO = :id_descuento`;
-        const params = [id_descuento];
-        const result = await db.executeQuery(query, params);
-
-        if (result.rows && result.rows.length > 0) {
-            res.status(200).json(result.rows);
-        } else {
-            res.status(404).json({ message: `Descuento no encontrado con el id: ${id}`});
-        }
-    } catch (error) {
-        console.error(`Error al obtener descuento: ${error}`);
-        res.status(500).json({ error: 'Error al obtener descuento' });
-    }
-}
-
-const getDiscountByType = async (req, res) => {
-    const { tipo_descuento } = req.query;
-
-    if (!tipo_descuento) {
-        return res.status(400).json({ error: 'El parámetro tipo_descuento es requerido' });
+  try {
+    const discount = await Discounts.findByPk(id);
+    if (!discount) {
+      return res.status(404).json({ message: "Discount not found" });
     }
 
-    try {
-        const query = `SELECT * FROM DESCUENTO 
-                        WHERE LOWER(TIPO_DESCUENTO) LIKE LOWER(:tipo_descuento)
-                        OR SOUNDEX(TIPO_DESCUENTO) = SOUNDEX(:tipo_descuento)`;
-        const params = { tipo_descuento: `%${tipo_descuento}%` };
-        
-        const result = await db.executeQuery(query, params);
+    discount.discount_type = discount_type || discount.discount_type;
+    discount.discount_value = discount_value || discount.discount_value;
+    discount.start_date = start_date || discount.start_date;
+    discount.end_date = end_date || discount.end_date;
 
-        if (result.rows.length === 0){
-            return res.status(404).json({ message: 'No se encontraron descuentos'});
-        }
+    await discount.save();
 
-        res.status(200).json({message: result.rows});
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({message: 'Error al obtener el descuento'});
+    res.status(200).json({
+      message: "Discount updated successfully",
+      discount: discount,
+    });
+  } catch (error) {
+    console.error(`Error updating discount: ${error}`);
+    res.status(500).json({ error: "Error updating discount" });
+  }
+};
+
+exports.deleteDiscountById = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const discount = await Discounts.findByPk(id);
+    if (!discount) {
+      return res.status(404).json({ message: "Discount not found" });
     }
-}
-
-const updateDiscount = async (req, res) => {
-    const { id } = req.params;
-    const { tipo_descuento, valor_descuento, fecha_inicio, fecha_fin } = req.body;
-
-    try {
-        const query = `
-        UPDATE DESCUENTO 
-        SET 
-            TIPO_DESCUENTO = :tipo_descuento, 
-            VALOR_DESCUENTO = :valor_descuento, 
-            FECHA_INICIO = TO_DATE(:fecha_inicio, 'YYYY-MM-DD'), 
-            FECHA_FIN = TO_DATE(:fecha_fin, 'YYYY-MM-DD')
-            WHERE ID_DESCUENTO = :id`;
-        const params = {
-            tipo_descuento,
-            valor_descuento,
-            fecha_inicio,
-            fecha_fin,
-            id
-        };
-        const result = await db.executeQuery(query, params);
-
-        if (result.rowsAffected && result.rowsAffected > 0) {
-            res.status(200).json({
-                message: 'Descuento actualizado exitosamente',
-                id,
-                tipo_descuento,
-                valor_descuento,
-                fecha_inicio,
-                fecha_fin
-            });
-        } else {
-            res.status(404).json({ message: `Descuento no encontrado con el id: ${id}`});
-        }
-    } catch (error) {
-        console.error(`Error al actualizar descuento: ${error}`);
-        res.status(500).json({ error: 'Error al actualizar descuento' });
-    }
-}
-
-const deleteDiscountById = async (req, res) => {
-    const { id }  = req.params;
-
-    try {
-        const query = `DELETE FROM DESCUENTO WHERE ID_DESCUENTO = :id`;
-        const params = [id];
-        const result = await db.executeQuery(query, params);
-
-        if (result.rowsAffected && result.rowsAffected > 0) {
-            res.status(200).json({ message: 'Descuento eliminado exitosamente', id });
-        } else {
-            res.status(404).json({ message: `Descuento no encontrado con el id: ${id}`});
-        }
-    } catch (error) {
-        console.error(`Error al eliminar descuento: ${error}`);
-        res.status(500).json({ error: 'Error al eliminar descuento' });
-    }
-}
-
-module.exports = { 
-    createDiscount,
-    getAllDiscounts,
-    getDiscountById,
-    getDiscountByType,
-    updateDiscount,
-    deleteDiscountById
-}
+    
+    await discount.destroy();
+    res.status(200).json({ message: "Discount deleted successfully", id: id });
+  } catch (error) {
+    console.error(`Error deleting discount: ${error}`);
+    res.status(500).json({ error: "Error deleting discount" });
+  }
+};
